@@ -1,0 +1,62 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ titulo }}</title>
+<style>
+  :root { --tinta:#1a1a1a; --tenue:#6b6b6b; --linea:#e2e0db; --fondo:#faf9f7; --acento:#7a2e2e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --tinta:#e8e6e1; --tenue:#9a978f; --linea:#33322e; --fondo:#161614; --acento:#c98a8a; }
+  }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--fondo); color:var(--tinta);
+         font:16px/1.6 Georgia,'Times New Roman',serif; }
+  .caja { max-width:52rem; margin:0 auto; padding:3rem 1.5rem 5rem; }
+  header { border-bottom:2px solid var(--tinta); padding-bottom:1rem; margin-bottom:2.5rem; }
+  h1 { font-size:2rem; margin:0; letter-spacing:-.01em; }
+  .sub { color:var(--tenue); font-size:.9rem; margin-top:.4rem; }
+  h2 { font-size:.8rem; text-transform:uppercase; letter-spacing:.12em;
+       color:var(--tenue); border-bottom:1px solid var(--linea);
+       padding-bottom:.4rem; margin:2.5rem 0 1rem; font-family:system-ui,sans-serif; }
+  article { padding:1rem 0; border-bottom:1px solid var(--linea); }
+  .titular { font-size:1.1rem; font-weight:600; margin:0 0 .4rem; }
+  .titular a { color:var(--tinta); text-decoration:none; border-bottom:1px solid var(--acento); }
+  .meta { font-family:system-ui,sans-serif; font-size:.75rem; color:var(--tenue);
+          display:flex; gap:.75rem; flex-wrap:wrap; margin-bottom:.5rem; }
+  .rol { font-weight:600; color:var(--acento); }
+  .resumen { margin:0; color:var(--tinta); }
+  .fallo { display:inline-block; padding:.1rem .45rem; border-radius:3px;
+           background:var(--linea); font-size:.7rem; text-transform:uppercase;
+           letter-spacing:.06em; }
+  footer { margin-top:3rem; color:var(--tenue); font-size:.8rem;
+           font-family:system-ui,sans-serif; }
+</style>
+<div class="caja">
+<header>
+  <h1>{{ titulo }}</h1>
+  <div class="sub">{{ subtitulo }} · generado el {{ generado }}</div>
+</header>
+
+{% for fecha, grupo in por_fecha %}
+<h2>{{ fecha }}</h2>
+  {% for s in grupo %}
+  <article>
+    <p class="titular">
+      {% if s.url_pdf %}<a href="{{ s.url_pdf }}">{{ s.titular or s.caratulado }}</a>
+      {% else %}{{ s.titular or s.caratulado }}{% endif %}
+    </p>
+    <div class="meta">
+      <span class="rol">{{ s.rol }}</span>
+      <span>{{ s.materia }}</span>
+      {% if s.region %}<span>{{ s.region }}</span>{% endif %}
+      {% if s.resuelve %}<span class="fallo">{{ s.resuelve }}</span>{% endif %}
+    </div>
+    {% if s.resumen %}<p class="resumen">{{ s.resumen }}</p>{% endif %}
+  </article>
+  {% endfor %}
+{% endfor %}
+
+<footer>
+  {{ total }} sentencias · fuente: {{ fuente }} ·
+  este boletín enlaza a los documentos originales, no los reproduce.
+</footer>
+</div>

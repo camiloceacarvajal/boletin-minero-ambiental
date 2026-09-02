@@ -1,0 +1,56 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>{{ titulo }}</title>
+<style>
+  @page { size:A4; margin:2cm 1.8cm 2.2cm; }
+  body { font:11.5pt/1.55 Georgia,'Times New Roman',serif; color:#111; margin:0;
+         max-width:46rem; margin:0 auto; padding:2rem 1.5rem; }
+  header { border-bottom:2px solid #111; padding-bottom:.8rem; margin-bottom:1.5rem; }
+  h1 { font-size:1.5rem; margin:0 0 .2rem; }
+  .periodo { color:#666; font-size:.85rem; font-family:system-ui,sans-serif; }
+  .indice { background:#f4f2ee; padding:1rem 1.2rem; margin-bottom:2rem;
+            font-family:system-ui,sans-serif; font-size:.85rem; }
+  .indice ol { margin:.4rem 0 0; padding-left:1.2rem; }
+  .indice li { margin:.25rem 0; }
+  article { page-break-inside:avoid; margin-bottom:1.6rem; padding-bottom:1.2rem;
+            border-bottom:1px solid #ddd; }
+  .titular { font-size:1.05rem; font-weight:700; margin:0 0 .3rem; }
+  .meta { font-family:system-ui,sans-serif; font-size:.72rem; color:#666;
+          margin-bottom:.5rem; }
+  .rol { color:#7a2e2e; font-weight:700; }
+  .estrellas { color:#b8860b; letter-spacing:.08em; }
+  p.resumen { margin:0 0 .4rem; text-align:justify; }
+  .enlace { font-family:system-ui,sans-serif; font-size:.72rem; }
+  .enlace a { color:#7a2e2e; }
+  footer { margin-top:2rem; font-family:system-ui,sans-serif; font-size:.72rem;
+           color:#666; border-top:1px solid #ddd; padding-top:.8rem; }
+  @media print { body { padding:0 } .indice { background:none; border:1px solid #ccc } }
+</style>
+<header>
+  <h1>{{ titulo }}</h1>
+  <div class="periodo">{{ desde }} — {{ hasta }} · {{ total }} sentencias</div>
+</header>
+
+<div class="indice">
+  <strong>En este número</strong>
+  <ol>{% for s in sentencias %}<li>{{ s.titular }} <em>({{ s.rol }})</em></li>{% endfor %}</ol>
+</div>
+
+{% for s in sentencias %}
+<article>
+  <p class="titular">{{ loop.index }}. {{ s.titular }}</p>
+  <div class="meta">
+    <span class="rol">{{ s.rol }}</span> ·
+    {{ s.materia }} · {{ s.region }} · {{ s.fecha_larga }} ·
+    <strong>{{ s.resuelve }}</strong>
+    {% if s.destacada %} · <span class="estrellas">★ destacada</span>{% endif %}
+  </div>
+  <p class="resumen">{{ s.resumen }}</p>
+  {% if s.url_pdf %}<div class="enlace"><a href="{{ s.url_pdf }}">Texto íntegro de la sentencia</a></div>{% endif %}
+</article>
+{% endfor %}
+
+<footer>
+  {{ fuente }} · Los enlaces apuntan a los documentos publicados por el tribunal.
+  Este boletín no reproduce las sentencias.
+</footer>

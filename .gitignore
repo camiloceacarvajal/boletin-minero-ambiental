@@ -1,0 +1,9 @@
+# entorno y dependencias
+.venv/
+__pycache__/
+*.pyc
+
+# datos derivados: se regeneran con ./flujo.sh
+boletin.db*
+pdfs/
+pendientes.json

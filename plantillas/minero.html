@@ -1,0 +1,262 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ titulo }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf8f5; --panel:#fff; --tinta:#1c1917; --suave:#78716c; --tenue:#a8a29e;
+  --linea:#e7e2db; --cobre:#b45309; --cobre-suave:#fef3e2;
+  --verde:#15803d; --verde-bg:#dcfce7; --rojo:#b91c1c; --rojo-bg:#fee2e2;
+  --azul:#1d4ed8; --azul-bg:#dbeafe; --sombra:0 1px 2px rgba(28,25,23,.06),0 8px 24px -12px rgba(28,25,23,.12);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#14110f; --panel:#1c1917; --tinta:#f5f1ec; --suave:#a8a29e; --tenue:#78716c;
+  --linea:#2c2724; --cobre:#f59e0b; --cobre-suave:#3a2a12;
+  --verde:#4ade80; --verde-bg:#14321f; --rojo:#f87171; --rojo-bg:#3a1a1a;
+  --azul:#93c5fd; --azul-bg:#17253f; --sombra:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}}
+:root[data-theme=dark]{
+  --bg:#14110f; --panel:#1c1917; --tinta:#f5f1ec; --suave:#a8a29e; --tenue:#78716c;
+  --linea:#2c2724; --cobre:#f59e0b; --cobre-suave:#3a2a12;
+  --verde:#4ade80; --verde-bg:#14321f; --rojo:#f87171; --rojo-bg:#3a1a1a;
+  --azul:#93c5fd; --azul-bg:#17253f; --sombra:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tinta);
+     font:16px/1.6 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.caja{max-width:64rem;margin:0 auto;padding:0 1.25rem 5rem}
+
+/* ---------- cabecera ---------- */
+header{padding:3.5rem 0 2rem;position:relative}
+.marca{display:flex;align-items:center;gap:.6rem;margin-bottom:1.4rem}
+.veta{width:2.1rem;height:2.1rem;flex:none}
+h1{font-family:Fraunces,Georgia,serif;font-size:clamp(2rem,5vw,2.9rem);
+   font-weight:600;line-height:1.05;letter-spacing:-.02em;margin:0}
+h1 em{font-style:normal;color:var(--cobre)}
+.bajada{color:var(--suave);font-size:1.02rem;margin:.7rem 0 0;max-width:38rem}
+.tema{position:absolute;top:3.5rem;right:0;background:var(--panel);color:var(--suave);
+      border:1px solid var(--linea);border-radius:999px;width:2.4rem;height:2.4rem;
+      cursor:pointer;font-size:1rem;display:grid;place-items:center;transition:.15s}
+.tema:hover{color:var(--cobre);border-color:var(--cobre)}
+
+/* ---------- cifras ---------- */
+.cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));
+        gap:.75rem;margin:2rem 0 2.5rem}
+.cifra{background:var(--panel);border:1px solid var(--linea);border-radius:10px;
+       padding:.9rem 1rem;box-shadow:var(--sombra)}
+.cifra b{display:block;font-family:Fraunces,serif;font-size:1.75rem;font-weight:600;
+         line-height:1;letter-spacing:-.02em}
+.cifra span{display:block;font-size:.72rem;color:var(--tenue);text-transform:uppercase;
+            letter-spacing:.09em;margin-top:.4rem}
+.cifra.acento b{color:var(--cobre)}
+
+/* ---------- filtros ---------- */
+.filtros{position:sticky;top:0;z-index:10;background:var(--bg);
+         padding:.9rem 0;border-bottom:1px solid var(--linea);margin-bottom:.5rem}
+.buscador{width:100%;padding:.7rem .95rem;border:1px solid var(--linea);border-radius:9px;
+          background:var(--panel);color:var(--tinta);font:inherit;font-size:.92rem;
+          margin-bottom:.7rem;transition:.15s}
+.buscador:focus{outline:none;border-color:var(--cobre);box-shadow:0 0 0 3px var(--cobre-suave)}
+.chips{display:flex;gap:.4rem;flex-wrap:wrap}
+.chip{background:var(--panel);border:1px solid var(--linea);color:var(--suave);
+      border-radius:999px;padding:.32rem .8rem;font-size:.78rem;font-weight:500;
+      cursor:pointer;transition:.15s;white-space:nowrap}
+.chip:hover{border-color:var(--cobre);color:var(--cobre)}
+.chip[aria-pressed=true]{background:var(--cobre);border-color:var(--cobre);color:#fff}
+:root[data-theme=dark] .chip[aria-pressed=true],
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .chip[aria-pressed=true]{color:#1c1917}}
+.conteo{color:var(--tenue);font-size:.78rem;padding:.75rem 0 .25rem}
+
+/* ---------- fichas ---------- */
+article{background:var(--panel);border:1px solid var(--linea);border-radius:12px;
+        padding:1.15rem 1.3rem;margin-bottom:.7rem;box-shadow:var(--sombra);
+        transition:transform .15s,border-color .15s}
+article:hover{transform:translateY(-1px);border-color:var(--cobre)}
+.linea{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.55rem}
+.rol{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.76rem;
+     font-weight:600;color:var(--cobre);background:var(--cobre-suave);
+     padding:.16rem .5rem;border-radius:5px}
+.trib{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+      color:var(--tenue)}
+.fallo{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;
+       padding:.16rem .5rem;border-radius:5px}
+.fallo.acoge{background:var(--verde-bg);color:var(--verde)}
+.fallo.rechaza{background:var(--rojo-bg);color:var(--rojo)}
+.fallo.otro{background:var(--azul-bg);color:var(--azul)}
+.fecha{margin-left:auto;font-size:.75rem;color:var(--tenue)}
+h3{font-family:Fraunces,Georgia,serif;font-size:1.09rem;font-weight:600;line-height:1.35;
+   margin:0 0 .45rem;letter-spacing:-.01em}
+h3 a{color:inherit;text-decoration:none;background-image:linear-gradient(var(--cobre),var(--cobre));
+     background-size:0% 1.5px;background-repeat:no-repeat;background-position:0 100%;transition:.25s}
+article:hover h3 a{background-size:100% 1.5px}
+.resumen{color:var(--suave);font-size:.9rem;margin:0;
+         display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pie{display:flex;gap:.9rem;align-items:center;margin-top:.7rem;font-size:.76rem}
+.pie a{color:var(--cobre);text-decoration:none;font-weight:500}
+.pie a:hover{text-decoration:underline}
+.region{color:var(--tenue)}
+.chips.materias{margin-top:.45rem}
+.chip.mat{font-size:.74rem;opacity:.9}
+.etiquetas{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.6rem}
+.et{font-size:.68rem;font-weight:500;color:var(--suave);background:var(--bg);
+    border:1px solid var(--linea);border-radius:5px;padding:.12rem .45rem}
+.detalle{background:none;border:0;color:var(--cobre);font:inherit;font-size:.76rem;
+         font-weight:500;cursor:pointer;padding:0}
+.detalle:hover{text-decoration:underline}
+.fichadet{margin-top:.85rem;padding-top:.85rem;border-top:1px dashed var(--linea)}
+.det{margin-bottom:.6rem}
+.det b{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;
+       color:var(--tenue);margin-bottom:.35rem;font-weight:600}
+.pills{display:flex;gap:.3rem;flex-wrap:wrap}
+.pill{font-size:.72rem;background:var(--cobre-suave);color:var(--cobre);
+      border-radius:5px;padding:.15rem .45rem;font-weight:500}
+.pill.mono{font-family:ui-monospace,Menlo,monospace;font-size:.68rem}
+.vacio{text-align:center;padding:4rem 1rem;color:var(--tenue)}
+footer{margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--linea);
+       color:var(--tenue);font-size:.8rem}
+footer a{color:var(--cobre)}
+</style>
+
+<div class="caja">
+<header>
+  <button class="tema" id="tema" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
+  <div class="marca">
+    <svg class="veta" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <path d="M16 2 4 9v14l12 7 12-7V9L16 2z" stroke="var(--cobre)" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M16 2v28M4 9l12 7 12-7" stroke="var(--cobre)" stroke-width="1.2" opacity=".55"/>
+    </svg>
+    <strong style="font-family:Fraunces,serif;font-size:.95rem;letter-spacing:.02em">LA VETA</strong>
+  </div>
+  <h1>Jurisprudencia <em>minero-ambiental</em></h1>
+  <p class="bajada">{{ bajada }}</p>
+</header>
+
+<div class="cifras">
+  <div class="cifra acento"><b>{{ total }}</b><span>Sentencias</span></div>
+  <div class="cifra"><b>{{ n_1ta }}</b><span>1.º T.A. — Norte</span></div>
+  <div class="cifra"><b>{{ n_2ta }}</b><span>2.º T.A. — Centro</span></div>
+  <div class="cifra"><b>{{ n_acoge }}</b><span>Acogidas</span></div>
+  <div class="cifra"><b>{{ n_rechaza }}</b><span>Rechazadas</span></div>
+  <div class="cifra"><b>{{ n_texto }}</b><span>Texto íntegro</span></div>
+</div>
+
+<div class="filtros">
+  <input class="buscador" id="q" type="search" placeholder="Buscar por empresa, faena, rol o materia — Codelco, relaves, Escondida, SEIA…">
+  <div class="chips" id="chips">
+    <button class="chip" data-f="todo" aria-pressed="true">Todas</button>
+    <button class="chip" data-f="1ta" aria-pressed="false">1.º T.A.</button>
+    <button class="chip" data-f="2ta" aria-pressed="false">2.º T.A.</button>
+    <button class="chip" data-f="acoge" aria-pressed="false">Acoge</button>
+    <button class="chip" data-f="rechaza" aria-pressed="false">Rechaza</button>
+    <button class="chip" data-f="pdf" aria-pressed="false">Con sentencia PDF</button>
+  </div>
+  <div class="chips materias" id="materias">
+    {% for m in submaterias %}<button class="chip mat" data-m="{{ m }}" aria-pressed="false">{{ m }}</button>{% endfor %}
+  </div>
+</div>
+<div class="conteo" id="conteo"></div>
+
+<div id="lista">
+{% for s in sentencias %}
+  <article data-t="{{ s.fuente }}" data-r="{{ s.clase }}" data-pdf="{{ 1 if s.url_pdf else 0 }}"
+           data-buscar="{{ s.buscable }}" data-mat="{{ s.submaterias }}">
+    <div class="linea">
+      <span class="rol">{{ s.rol }}</span>
+      <span class="trib">{{ s.tribunal }}</span>
+      {% if s.resuelve %}<span class="fallo {{ s.clase }}">{{ s.resuelve[:26] }}</span>{% endif %}
+      <span class="fecha">{{ s.fecha_larga }}</span>
+    </div>
+    <h3>{% if s.url_pdf %}<a href="{{ s.url_pdf }}">{{ s.titular }}</a>{% else %}{{ s.titular }}{% endif %}</h3>
+    {% if s.resumen %}<p class="resumen">{{ s.resumen }}</p>{% endif %}
+    {% if s.subs and s.subs != ['Ambiental'] %}
+    <div class="etiquetas">{% for m in s.subs %}{% if m != 'Ambiental' %}<span class="et">{{ m }}</span>{% endif %}{% endfor %}</div>
+    {% endif %}
+    <div class="pie">
+      {% if s.region %}<span class="region">{{ s.region }}</span>{% endif %}
+      {% if s.url_pdf %}<a href="{{ s.url_pdf }}">Sentencia ↓</a>{% endif %}
+      {% if s.url_expediente %}<a href="{{ s.url_expediente }}">Expediente ↗</a>{% endif %}
+      {% if s.normas_l %}<button class="detalle" type="button">Ver normas citadas →</button>{% endif %}
+    </div>
+    {% if s.normas_l %}
+    <div class="fichadet" hidden>
+      <div class="det"><b>Normas citadas</b>
+        <div class="pills">{% for n in s.normas_l %}<span class="pill">{{ n }}</span>{% endfor %}</div>
+      </div>
+      {% if s.arts %}<div class="det"><b>Artículos más invocados</b>
+        <div class="pills">{% for a in s.arts %}<span class="pill mono">{{ a }}</span>{% endfor %}</div>
+      </div>{% endif %}
+    </div>
+    {% endif %}
+  </article>
+{% endfor %}
+</div>
+<div class="vacio" id="vacio" hidden>Nada calza con ese filtro.</div>
+
+<footer>
+  Fuentes: <a href="https://1ta.cl">Primer Tribunal Ambiental</a> (Antofagasta) y
+  <a href="https://tribunalambiental.cl">Segundo Tribunal Ambiental</a> (Santiago).
+  Generado el {{ generado }}. Los enlaces apuntan a los documentos publicados por
+  cada tribunal; este boletín no los reproduce.
+</footer>
+</div>
+
+<script>
+(function(){
+  var raiz=document.documentElement, boton=document.getElementById('tema');
+  try{var g=localStorage.getItem('tema'); if(g) raiz.setAttribute('data-theme',g);}catch(e){}
+  boton.onclick=function(){
+    var d=raiz.getAttribute('data-theme')==='dark'?'light':'dark';
+    raiz.setAttribute('data-theme',d);
+    try{localStorage.setItem('tema',d);}catch(e){}
+  };
+
+  document.getElementById('lista').addEventListener('click', function(e){
+    var b=e.target.closest('.detalle'); if(!b) return;
+    var d=b.closest('article').querySelector('.fichadet');
+    d.hidden=!d.hidden;
+    b.textContent = d.hidden ? 'Ver normas citadas →' : 'Ocultar normas ↑';
+  });
+
+  var fichas=[].slice.call(document.querySelectorAll('#lista article'));
+  var q=document.getElementById('q'), conteo=document.getElementById('conteo'),
+      vacio=document.getElementById('vacio'), activo='todo', materia=null;
+
+  function pintar(){
+    var t=q.value.trim().toLowerCase(), n=0;
+    fichas.forEach(function(f){
+      var pasaChip = activo==='todo'
+        || (activo==='1ta'||activo==='2ta') && f.dataset.t===activo
+        || (activo==='acoge'||activo==='rechaza') && f.dataset.r===activo
+        || activo==='pdf' && f.dataset.pdf==='1';
+      var pasaTexto = !t || f.dataset.buscar.indexOf(t)>-1;
+      var pasaMat = !materia || (f.dataset.mat||'').indexOf(materia)>-1;
+      var ver = pasaChip && pasaTexto && pasaMat;
+      f.hidden=!ver; if(ver) n++;
+    });
+    conteo.textContent = n + (n===1?' sentencia':' sentencias');
+    vacio.hidden = n>0;
+  }
+  q.addEventListener('input', pintar);
+  document.getElementById('chips').addEventListener('click', function(e){
+    var b=e.target.closest('.chip'); if(!b) return;
+    activo=b.dataset.f;
+    [].forEach.call(this.querySelectorAll('.chip'), function(c){
+      c.setAttribute('aria-pressed', c===b);
+    });
+    pintar();
+  });
+  document.getElementById('materias').addEventListener('click', function(e){
+    var b=e.target.closest('.chip'); if(!b) return;
+    var yaEstaba = materia===b.dataset.m;
+    materia = yaEstaba ? null : b.dataset.m;
+    [].forEach.call(this.querySelectorAll('.chip'), function(c){
+      c.setAttribute('aria-pressed', !yaEstaba && c===b);
+    });
+    pintar();
+  });
+  pintar();
+})();
+</script>
