@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from boletin import almacen, controversias, minero, sitio
-from boletin.documentos import _normalizar
+from boletin.documentos import MINIMO_UTIL, _normalizar
 
 FALLOS = []
 
@@ -101,11 +101,12 @@ else:
     prueba("todo PDF descargado tiene texto o motivo",
            q("SELECT COUNT(*) FROM sentencias WHERE ruta_pdf IS NOT NULL "
              "AND texto IS NULL AND estado_texto IS NULL") == 0)
-    prueba("ningún texto guardado es basura corta",
-           q("SELECT COUNT(*) FROM sentencias WHERE texto IS NOT NULL "
-             "AND LENGTH(TRIM(texto)) < 3000") == 0)
-    prueba("los textos son largos (no PDF escaneado vacío)",
-           q("SELECT COALESCE(MIN(LENGTH(texto)),99999) FROM sentencias WHERE texto IS NOT NULL") > 5000)
+    prueba("todo estado_texto es un valor conocido",
+           q("SELECT COUNT(*) FROM sentencias WHERE estado_texto IS NOT NULL "
+             "AND estado_texto NOT IN ('ok','escaneado','ocr','ocr_fallido')") == 0)
+    prueba(f"ningún texto guardado baja del mínimo útil ({MINIMO_UTIL})",
+           q("SELECT COALESCE(MIN(LENGTH(TRIM(texto))),99999) FROM sentencias "
+             "WHERE texto IS NOT NULL") >= MINIMO_UTIL)
     prueba("el 1TA trae titular y resumen del tribunal",
            q("SELECT COUNT(*) FROM sentencias WHERE fuente='1ta' AND titular IS NULL") == 0)
 

@@ -36,9 +36,10 @@ CREATE INDEX IF NOT EXISTS idx_pend  ON sentencias (titular) WHERE titular IS NU
 
 
 @contextmanager
-def abrir(ruta="boletin.db"):
+def abrir(ruta="boletin.db", timeout=30):
     Path(ruta).parent.mkdir(parents=True, exist_ok=True)
-    con = sqlite3.connect(ruta)
+    # timeout: un paso largo (bajar, ocr) puede tener la base tomada.
+    con = sqlite3.connect(ruta, timeout=timeout)
     con.row_factory = sqlite3.Row
     con.executescript(ESQUEMA)
     try:
@@ -72,9 +73,12 @@ def pendientes(con, campo="titular", limite=50):
 
 
 def actualizar(con, id_, **campos):
+    """Escribe y confirma de inmediato: los pasos largos (bajar, ocr) no deben
+    retener la transacción durante minutos ni perder el trabajo si se cortan."""
     sets = ", ".join(f"{k} = ?" for k in campos)
     con.execute(f"UPDATE sentencias SET {sets} WHERE id = ?",
                 (*campos.values(), id_))
+    con.commit()
 
 
 def exportar_pendientes(con, limite=40):

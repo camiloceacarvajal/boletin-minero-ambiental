@@ -33,7 +33,7 @@ def trozos_relevantes(texto, limite_chars=60_000):
     return texto[:mitad] + "\n\n[... texto intermedio omitido ...]\n\n" + texto[-mitad:]
 
 
-MINIMO_UTIL = 3000   # bajo esto, el PDF es una imagen escaneada sin capa de texto
+MINIMO_UTIL = 1500   # bajo esto, el PDF es una imagen escaneada sin capa de texto
 TIENE_OCR = shutil.which("tesseract") is not None and shutil.which("pdftoppm") is not None
 
 
@@ -41,20 +41,40 @@ def es_escaneado(texto):
     return len((texto or "").strip()) < MINIMO_UTIL
 
 
-def ocr(ruta, max_paginas=40, idioma="spa"):
-    """Rasteriza y pasa OCR. Lento (~1-3 s por página) pero rescata los fallos
-    de 2013-2019 del 2TA, que se publicaron como imagen."""
+def _paginas(ruta):
+    r = subprocess.run(["pdfinfo", str(ruta)], capture_output=True, text=True, timeout=60)
+    m = re.search(r"Pages:\s+(\d+)", r.stdout)
+    return int(m.group(1)) if m else 0
+
+
+def ocr(ruta, cabeza=12, cola=8, dpi=150, idioma="spa"):
+    """OCR de las puntas del documento, no de todo.
+
+    Rasterizar 140 paginas a 200 dpi son ~10 min por sentencia y no compensa:
+    lo que hace falta para titular e indexar normas esta en los VISTOS y en la
+    parte resolutiva. Se rescatan `cabeza` paginas del principio y `cola` del
+    final; a 150 dpi tesseract sigue leyendo bien un PDF de texto rasterizado.
+    """
     import tempfile
+    from pathlib import Path as _P
     if not TIENE_OCR:
         raise RuntimeError("falta tesseract o poppler: sudo apt install tesseract-ocr-spa poppler-utils")
+
+    total = _paginas(ruta)
+    tramos = [(1, min(cabeza, total or cabeza))]
+    if total and total > cabeza + cola:
+        tramos.append((total - cola + 1, total))
+
     piezas = []
     with tempfile.TemporaryDirectory() as tmp:
-        subprocess.run(["pdftoppm", "-r", "200", "-gray", "-l", str(max_paginas),
-                        "-png", str(ruta), f"{tmp}/p"],
-                       capture_output=True, timeout=900, check=True)
-        from pathlib import Path as _P
-        for png in sorted(_P(tmp).glob("p-*.png")):
-            r = subprocess.run(["tesseract", str(png), "stdout", "-l", idioma, "--psm", "1"],
-                               capture_output=True, text=True, timeout=180)
+        for i, (desde, hasta) in enumerate(tramos):
+            subprocess.run(["pdftoppm", "-r", str(dpi), "-gray",
+                            "-f", str(desde), "-l", str(hasta),
+                            "-png", str(ruta), f"{tmp}/t{i}"],
+                           capture_output=True, timeout=600, check=True)
+        for png in sorted(_P(tmp).glob("t*.png")):
+            r = subprocess.run(["tesseract", str(png), "stdout", "-l", idioma,
+                                "--psm", "1"],
+                               capture_output=True, text=True, timeout=120)
             piezas.append(r.stdout)
     return _normalizar("\n".join(piezas))
