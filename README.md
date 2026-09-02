@@ -19,8 +19,10 @@ Salida: `publico/veta.html` (el boletín) y `publico/reporte-*.html` (imprimible
 python3 cli.py ingestar --fuente 1ta   # Primer T.A. (Antofagasta): el norte minero
 python3 cli.py ingestar --fuente 2ta   # Segundo T.A. (Santiago)
 python3 cli.py clasificar              # marca lo minero
-python3 cli.py bajar --minero --n 25   # descarga los PDF de las mineras
+python3 cli.py indexar                 # normas citadas, artículos, sub-materia
+python3 cli.py bajar --minero --n 120  # descarga los PDF de las mineras
 python3 cli.py extraer                 # PDF -> texto
+python3 cli.py ocr --minero --n 40     # rescata los escaneados (2013-2019)
 python3 cli.py preparar --auto         # titular desde la tabla de contenidos
 python3 cli.py veta                    # publica el boletín
 python3 cli.py reportar --dias 7       # reporte del periodo
@@ -94,3 +96,10 @@ escritas por un abogado, una por una. Las nuestras cubren 37 de 106 y salen de l
 tabla de contenidos del propio tribunal — sirven para orientarse, no son doctrina.
 Ese hueco no lo cierra más código: se cierra redactando, o descargando los 91 PDF
 que faltan para que el índice de normas cubra el total.
+
+## PDF escaneados
+
+Los fallos del 2.º T.A. anteriores a ~2019 se publicaron como imagen, sin capa de
+texto. `extraer` los detecta y los marca `estado_texto='escaneado'` en vez de
+guardar una cadena vacía; `ocr` los rescata con tesseract en español. Es lento
+(1-3 s por página), así que va como paso aparte y opcional.

@@ -31,3 +31,30 @@ def trozos_relevantes(texto, limite_chars=60_000):
         return texto
     mitad = limite_chars // 2
     return texto[:mitad] + "\n\n[... texto intermedio omitido ...]\n\n" + texto[-mitad:]
+
+
+MINIMO_UTIL = 3000   # bajo esto, el PDF es una imagen escaneada sin capa de texto
+TIENE_OCR = shutil.which("tesseract") is not None and shutil.which("pdftoppm") is not None
+
+
+def es_escaneado(texto):
+    return len((texto or "").strip()) < MINIMO_UTIL
+
+
+def ocr(ruta, max_paginas=40, idioma="spa"):
+    """Rasteriza y pasa OCR. Lento (~1-3 s por página) pero rescata los fallos
+    de 2013-2019 del 2TA, que se publicaron como imagen."""
+    import tempfile
+    if not TIENE_OCR:
+        raise RuntimeError("falta tesseract o poppler: sudo apt install tesseract-ocr-spa poppler-utils")
+    piezas = []
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(["pdftoppm", "-r", "200", "-gray", "-l", str(max_paginas),
+                        "-png", str(ruta), f"{tmp}/p"],
+                       capture_output=True, timeout=900, check=True)
+        from pathlib import Path as _P
+        for png in sorted(_P(tmp).glob("p-*.png")):
+            r = subprocess.run(["tesseract", str(png), "stdout", "-l", idioma, "--psm", "1"],
+                               capture_output=True, text=True, timeout=180)
+            piezas.append(r.stdout)
+    return _normalizar("\n".join(piezas))

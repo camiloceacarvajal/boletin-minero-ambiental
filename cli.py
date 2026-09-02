@@ -4,6 +4,7 @@
   python3 cli.py ingestar            # raspa la fuente y guarda lo nuevo
   python3 cli.py bajar --n 20        # descarga los PDF pendientes
   python3 cli.py extraer             # PDF -> texto
+  python3 cli.py ocr --minero --n 5  # rescata los PDF escaneados (lento)
   python3 cli.py clasificar          # marca las sentencias mineras
   python3 cli.py indexar             # normas citadas, artículos y sub-materia
   python3 cli.py preparar --auto     # titular desde la tabla de contenidos (gratis)
@@ -61,7 +62,12 @@ def extraer(args):
         for f in pend:
             try:
                 t = documentos.texto_de_pdf(f["ruta_pdf"])
-                almacen.actualizar(con, f["id"], texto=t)
+                if documentos.es_escaneado(t):
+                    # PDF sin capa de texto: se marca para OCR en vez de guardar basura.
+                    almacen.actualizar(con, f["id"], estado_texto="escaneado")
+                    print(f"  ocr {f['rol']}  (escaneado, sin capa de texto)")
+                    continue
+                almacen.actualizar(con, f["id"], texto=t, estado_texto="ok")
                 n += 1
                 print(f"  ok  {f['rol']}  ({len(t):,} caracteres)")
             except Exception as e:
@@ -122,6 +128,31 @@ def clasificar(args):
             almacen.actualizar(con, f["id"], minero=int(m), puntaje_min=puntaje(campo))
             n += m
     print(f"{n} sentencias mineras marcadas")
+
+
+def ocr(args):
+    """Pasa OCR a los PDF escaneados. Lento: usar con --n bajo."""
+    if not documentos.TIENE_OCR:
+        sys.exit("falta OCR: sudo apt install tesseract-ocr-spa poppler-utils")
+    n = 0
+    with almacen.abrir(DB) as con:
+        pend = con.execute(
+            "SELECT id, rol, ruta_pdf FROM sentencias WHERE estado_texto = 'escaneado' "
+            + ("AND minero = 1 " if args.minero else "")
+            + "ORDER BY fecha_fallo DESC LIMIT ?", (args.n,)).fetchall()
+        for f in pend:
+            try:
+                t = documentos.ocr(f["ruta_pdf"])
+                if documentos.es_escaneado(t):
+                    almacen.actualizar(con, f["id"], estado_texto="ocr_fallido")
+                    print(f"  --  {f['rol']}: el OCR no sacó texto útil")
+                    continue
+                almacen.actualizar(con, f["id"], texto=t, estado_texto="ocr")
+                n += 1
+                print(f"  ok  {f['rol']}  ({len(t):,} caracteres por OCR)")
+            except Exception as e:
+                print(f"  --  {f['rol']}: {type(e).__name__}", file=sys.stderr)
+    print(f"{n} sentencias rescatadas por OCR")
 
 
 def indexar(args):
@@ -213,6 +244,10 @@ def main():
     a = sub.add_parser("resumir");  a.add_argument("--n", type=int, default=10); a.set_defaults(f=resumir)
     a = sub.add_parser("publicar"); a.add_argument("--n", type=int, default=60); a.set_defaults(f=publicar)
     a = sub.add_parser("clasificar"); a.set_defaults(f=clasificar)
+    a = sub.add_parser("ocr")
+    a.add_argument("--n", type=int, default=10)
+    a.add_argument("--minero", action="store_true")
+    a.set_defaults(f=ocr)
     a = sub.add_parser("indexar"); a.set_defaults(f=indexar)
     a = sub.add_parser("preparar")
     a.add_argument("--n", type=int, default=40)

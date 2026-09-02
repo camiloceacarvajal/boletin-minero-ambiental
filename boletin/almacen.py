@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS sentencias (
     url_expediente TEXT,
     ruta_pdf     TEXT,                   -- copia local
     texto        TEXT,                   -- texto extraído del PDF
+    estado_texto TEXT,                   -- ok | escaneado | ocr | ocr_fallido
     titular      TEXT,                   -- el resumen de una línea
     resumen      TEXT,                   -- párrafo
     destacada    INTEGER DEFAULT 0,      -- entra al boletín

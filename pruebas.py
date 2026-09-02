@@ -97,8 +97,13 @@ else:
            q("SELECT COUNT(*) FROM (SELECT fuente,rol FROM sentencias GROUP BY fuente,rol HAVING COUNT(*)>1)") == 0)
     prueba("las fechas son ISO",
            q("SELECT COUNT(*) FROM sentencias WHERE fecha_fallo IS NOT NULL AND fecha_fallo NOT GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'") == 0)
-    prueba("todo PDF descargado tiene texto",
-           q("SELECT COUNT(*) FROM sentencias WHERE ruta_pdf IS NOT NULL AND texto IS NULL") == 0)
+    # Un PDF escaneado no tiene capa de texto: debe quedar explicado, no en silencio.
+    prueba("todo PDF descargado tiene texto o motivo",
+           q("SELECT COUNT(*) FROM sentencias WHERE ruta_pdf IS NOT NULL "
+             "AND texto IS NULL AND estado_texto IS NULL") == 0)
+    prueba("ningún texto guardado es basura corta",
+           q("SELECT COUNT(*) FROM sentencias WHERE texto IS NOT NULL "
+             "AND LENGTH(TRIM(texto)) < 3000") == 0)
     prueba("los textos son largos (no PDF escaneado vacío)",
            q("SELECT COALESCE(MIN(LENGTH(texto)),99999) FROM sentencias WHERE texto IS NOT NULL") > 5000)
     prueba("el 1TA trae titular y resumen del tribunal",
