@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS sentencias (
     normas       TEXT,                   -- leyes citadas, separadas por |
     articulos    TEXT,                   -- artículos más invocados
     submaterias  TEXT,                   -- sancionatorio / evaluación / ...
+    corte_sup    TEXT,                   -- anexada · N Sala | citada | NULL
     visto_en     TEXT DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (fuente, rol)
 );

@@ -98,6 +98,8 @@ article:hover h3 a{background-size:100% 1.5px}
 .pie a{color:var(--cobre);text-decoration:none;font-weight:500}
 .pie a:hover{text-decoration:underline}
 .region{color:var(--tenue)}
+.cs{font-size:.66rem;font-weight:700;letter-spacing:.06em;padding:.14rem .4rem;
+    border-radius:5px;background:var(--cobre);color:var(--panel)}
 .chips.materias{margin-top:.45rem}
 .chip.mat{font-size:.74rem;opacity:.9}
 .etiquetas{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.6rem}
@@ -141,6 +143,7 @@ footer a{color:var(--cobre)}
   <div class="cifra"><b>{{ n_acoge }}</b><span>Acogidas</span></div>
   <div class="cifra"><b>{{ n_rechaza }}</b><span>Rechazadas</span></div>
   <div class="cifra"><b>{{ n_texto }}</b><span>Texto íntegro</span></div>
+  <div class="cifra"><b>{{ n_cs }}</b><span>Con Corte Suprema</span></div>
 </div>
 
 <div class="filtros">
@@ -152,6 +155,7 @@ footer a{color:var(--cobre)}
     <button class="chip" data-f="acoge" aria-pressed="false">Acoge</button>
     <button class="chip" data-f="rechaza" aria-pressed="false">Rechaza</button>
     <button class="chip" data-f="pdf" aria-pressed="false">Con sentencia PDF</button>
+    <button class="chip" data-f="cs" aria-pressed="false">Corte Suprema</button>
   </div>
   <div class="chips materias" id="materias">
     {% for m in submaterias %}<button class="chip mat" data-m="{{ m }}" aria-pressed="false">{{ m }}</button>{% endfor %}
@@ -162,11 +166,13 @@ footer a{color:var(--cobre)}
 <div id="lista">
 {% for s in sentencias %}
   <article data-t="{{ s.fuente }}" data-r="{{ s.clase }}" data-pdf="{{ 1 if s.url_pdf else 0 }}"
-           data-buscar="{{ s.buscable }}" data-mat="{{ s.submaterias }}">
+           data-buscar="{{ s.buscable }}" data-mat="{{ s.submaterias }}"
+           data-cs="{{ 1 if s.cs else 0 }}">
     <div class="linea">
       <span class="rol">{{ s.rol }}</span>
       <span class="trib">{{ s.tribunal }}</span>
       {% if s.resuelve %}<span class="fallo {{ s.clase }}">{{ s.resuelve[:26] }}</span>{% endif %}
+      {% if s.cs %}<span class="cs" title="{{ s.cs }}">CS</span>{% endif %}
       <span class="fecha">{{ s.fecha_larga }}</span>
     </div>
     <h3>{% if s.url_pdf %}<a href="{{ s.url_pdf }}">{{ s.titular }}</a>{% else %}{{ s.titular }}{% endif %}</h3>
@@ -185,6 +191,9 @@ footer a{color:var(--cobre)}
       <div class="det"><b>Normas citadas</b>
         <div class="pills">{% for n in s.normas_l %}<span class="pill">{{ n }}</span>{% endfor %}</div>
       </div>
+      {% if s.cs %}<div class="det"><b>Corte Suprema</b>
+        <div class="pills"><span class="pill">{{ s.cs }}</span></div>
+      </div>{% endif %}
       {% if s.arts %}<div class="det"><b>Artículos más invocados</b>
         <div class="pills">{% for a in s.arts %}<span class="pill mono">{{ a }}</span>{% endfor %}</div>
       </div>{% endif %}
@@ -230,7 +239,8 @@ footer a{color:var(--cobre)}
       var pasaChip = activo==='todo'
         || (activo==='1ta'||activo==='2ta') && f.dataset.t===activo
         || (activo==='acoge'||activo==='rechaza') && f.dataset.r===activo
-        || activo==='pdf' && f.dataset.pdf==='1';
+        || activo==='pdf' && f.dataset.pdf==='1'
+        || activo==='cs' && f.dataset.cs==='1';
       var pasaTexto = !t || f.dataset.buscar.indexOf(t)>-1;
       var pasaMat = !materia || (f.dataset.mat||'').indexOf(materia)>-1;
       var ver = pasaChip && pasaTexto && pasaMat;

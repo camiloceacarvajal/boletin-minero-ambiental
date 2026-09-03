@@ -84,3 +84,26 @@ def articulos(texto, tope=8):
         if ordinal: et += f" N° {ordinal}"
         cuenta[et] += 1
     return [a for a, c in cuenta.most_common(tope) if c >= 3]
+
+
+# --- rastro de la Corte Suprema -------------------------------------------
+# Algunos PDF del 2TA traen anexado el fallo de casación de la CS sobre la
+# propia sentencia. Es la única vía legítima que tenemos a texto de la Corte:
+# juris.pjud.cl está cerrado por robots.txt y reCAPTCHA.
+_CS_ANEXADO = re.compile(
+    r"Pronunciad[oa] por la (Primera|Segunda|Tercera|Cuarta) Sala de la Corte Suprema", re.I)
+_CS_CITADA = re.compile(
+    r"Corte Suprema[^.]{0,80}?\bRol\b[^.]{0,40}?(\d{1,6})[\s\-]+(\d{4})", re.I)
+
+
+def corte_suprema(texto):
+    """'anexada' si el fallo de la CS viene en el PDF; 'citada' si solo se
+    invoca su jurisprudencia; None si no aparece."""
+    if not texto:
+        return None
+    m = _CS_ANEXADO.search(texto)
+    if m:
+        return f"anexada · {m.group(1)} Sala"
+    if _CS_CITADA.search(texto):
+        return "citada"
+    return None

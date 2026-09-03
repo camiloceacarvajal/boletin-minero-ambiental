@@ -78,6 +78,7 @@ def minero(filas, destino, plantillas="plantillas", titulo="La Veta — jurispru
         d["tribunal"] = TRIBUNAL.get(d["fuente"], d["fuente"])
         d["fecha_larga"] = _en_palabras(d.get("fecha_fallo"))
         d["titular"] = d.get("titular") or d.get("caratulado") or d["rol"]
+        d["cs"] = d.get("corte_sup")
         d["subs"] = [x for x in (d.get("submaterias") or "").split("|") if x]
         d["normas_l"] = [x for x in (d.get("normas") or "").split("|") if x]
         d["arts"] = [x for x in (d.get("articulos") or "").split("|") if x]
@@ -85,7 +86,8 @@ def minero(filas, destino, plantillas="plantillas", titulo="La Veta — jurispru
         d["buscable"] = " ".join(str(x or "") for x in (
             d["rol"], d["titular"], d.get("resumen"), d.get("descripcion"),
             d.get("region"), d.get("resuelve"), d["tribunal"],
-            d.get("submaterias"), d.get("normas"), d.get("articulos"))).lower()
+            d.get("submaterias"), d.get("normas"), d.get("articulos"),
+            "corte suprema" if d.get("corte_sup") else "")).lower()
         ss.append(d)
 
     ss.sort(key=lambda r: (r.get("fecha_fallo") or ""), reverse=True)
@@ -101,6 +103,7 @@ def minero(filas, destino, plantillas="plantillas", titulo="La Veta — jurispru
         n_acoge=cuenta(lambda s: s["clase"] == "acoge"),
         n_rechaza=cuenta(lambda s: s["clase"] == "rechaza"),
         n_texto=cuenta(lambda s: s.get("texto")),
+        n_cs=cuenta(lambda s: s.get("cs")),
         submaterias=[m for m, _ in subs.most_common(9)],
         normas_top=[n for n, _ in normas_top.most_common(8)],
         bajada="Fallos de los tribunales ambientales chilenos sobre faenas, "
