@@ -15,7 +15,12 @@ FUERTE = re.compile(r"""
  anglo\ american|antofagasta\ minerals|barrick|kinross|teck|albemarle|
  \bsqm\b|lundin|spence|centinela|quebrada\ blanca|el\ abra|ministro\ hales|
  chuquicamata|radomiro\ tomic|gabriela\ mistral|lomas\ bayas|sierra\ gorda|
- pascua\ lama|el\ teniente|los\ bronces|andina|salvador|mantos\ blancos|
+ pascua\ lama|el\ teniente|los\ bronces|mantos\ blancos|
+ # 'Andina' y 'Salvador' son divisiones de Codelco, pero también aparecen en
+ # 'Aguas Andinas' o en topónimos: exigen el prefijo que las identifica.
+ divisi[óo]n\ (andina|salvador|el\ teniente|ministro\ hales|radomiro\ tomic|
+               chuquicamata|gabriela\ mistral|andes|ventanas|el\ salvador)|
+ codelco\ (andina|salvador|norte|ventanas)|
  compa[ñn][íi]a\ minera|sociedad\ contractual\ minera|\bscm\b|
  cat[óo]dos\ de\ cobre|concentrado\ de\ cobre|salmuera
 """, re.I | re.X)

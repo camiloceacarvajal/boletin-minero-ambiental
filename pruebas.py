@@ -27,7 +27,13 @@ POSITIVOS = ["multa a Codelco por la SMA", "tranque de relaves El Torito",
              "extracción de áridos del río", "planta de beneficio de cobre",
              "sondajes mineros de prefactibilidad", "SQM salar de Llamara",
              "Compañía Minera del Pacífico", "pila de lixiviación"]
-NEGATIVOS = ["humedal urbano Tranque La Poza", "Santuario de la Naturaleza Río Sasso",
+# Regresión: 'Andina' (por Codelco División Andina) hacía match dentro de
+# 'Aguas Andinas' y colaba la planta de tratamiento del Mapocho al boletín.
+POSITIVOS += ["Codelco División Andina depósito de lastre", "Codelco División El Salvador"]
+NEGATIVOS = ["Aguas Andinas S.A. planta de tratamiento",
+             "la ciudad de El Salvador en Centroamérica",
+             "cordillera andina y su fauna",
+             "humedal urbano Tranque La Poza", "Santuario de la Naturaleza Río Sasso",
              "multa por ruidos a un restaurante", "planta fotovoltaica Quilicura",
              "Parque Nacional Torres del Paine", "caudal ecológico del río Mapocho",
              "emisión de ruidos de un pub", "aceites lubricantes usados Ley REP"]
