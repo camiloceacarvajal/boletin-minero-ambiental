@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from boletin import almacen, controversias, minero, sitio
+from boletin import almacen, controversias, materias, minero, normas, sitio
 from boletin.documentos import MINIMO_UTIL, _normalizar
 
 FALLOS = []
@@ -60,6 +60,52 @@ t = controversias.titular_tentativo(TOC, "acoge")
 prueba("titular lleva el resultado", t and t.endswith("— acoge"), str(t))
 prueba("titular quita 'Eventual'", t and not t.lower().startswith("eventual"), str(t))
 prueba("sin tabla devuelve None", controversias.titular_tentativo("texto cualquiera") is None)
+
+print("\n== normas citadas ==")
+TXT = ("conforme a los artículos 17 N° 3 y 18 de la Ley N° 20.600, y el artículo 53 "
+       "de la Ley N° 19.880, en relación con la Ley 19.300 y el D.S. N° 40/2012. "
+       "El artículo 17 N° 3 se aplica también según el Código de Aguas. "
+       "Y de nuevo el Código de Aguas rige la materia. "
+       "Ver artículo 17 N° 3 y artículo 53. Artículo 53 y artículo 53 otra vez. "
+       "Ley N° 20.600 y Ley 20.600 y Ley N°20.600.")
+ns = normas.extraer(TXT, minimo=2)
+prueba("reconoce la Ley 20.600 por su nombre",
+       any("20.600" in n and "Tribunales Ambientales" in n for n in ns), str(ns))
+prueba("'20600' y '20.600' son la misma ley", normas._norm("20600") == "20.600")
+prueba("detecta el Código de Aguas", "Código de Aguas" in ns, str(ns))
+prueba("descarta lo citado una sola vez (D.S. 40/2012)", "D.S. 40/2012" not in ns, str(ns))
+prueba("la Ley 19.880, citada una vez, tampoco entra",
+       not any("19.880" in n for n in ns), str(ns))
+arts = normas.articulos(TXT)
+prueba("extrae 'art. 17 N° 3'", "art. 17 N° 3" in arts, str(arts))
+prueba("extrae 'art. 53'", "art. 53" in arts, str(arts))
+prueba("texto vacío no revienta", normas.extraer(None) == [] and normas.articulos("") == [])
+
+print("\n== rastro de la Corte Suprema ==")
+prueba("detecta el fallo anexado",
+       (normas.corte_suprema("Pronunciado por la Tercera Sala de la Corte Suprema") or "")
+       .startswith("anexada"))
+prueba("lee el rol de casación del listado",
+       normas.corte_suprema(None, "ver Sentencia de la Excma. Corte Suprema rol N° 24.870-2018")
+       == "casación rol 24.870-2018")
+prueba("limpia el punto sobrante del rol",
+       normas.corte_suprema(None, "Sentencia de la Excma. Corte Suprema rol N°117.379.-2020")
+       == "casación rol 117.379-2020")
+prueba("anuncio sin rol queda como 'resuelta en casación'",
+       normas.corte_suprema(None, "ver Sentencia de la Excma. Corte Suprema") == "resuelta en casación")
+prueba("el fallo anexado manda sobre el listado",
+       (normas.corte_suprema("Pronunciada por la Tercera Sala de la Corte Suprema",
+                             "ver Sentencia de la Excma. Corte Suprema") or "").startswith("anexada"))
+prueba("sin rastro devuelve None", normas.corte_suprema("texto cualquiera", "otra cosa") is None)
+
+print("\n== sub-materias ==")
+prueba("multa en UTA es sancionatorio",
+       "Sancionatorio SMA" in materias.clasificar("multa de 56 UTA por la SMA"))
+prueba("RCA es evaluación",
+       "Evaluación (SEIA)" in materias.clasificar("la resolución de calificación ambiental del proyecto"))
+prueba("Convenio 169 es consulta indígena",
+       "Consulta indígena" in materias.clasificar("aplicación del Convenio 169 a la comunidad"))
+prueba("sin señales cae en 'Ambiental'", materias.clasificar("texto neutro") == ["Ambiental"])
 
 print("\n== almacén ==")
 tmp = Path("/tmp/prueba_boletin.db")

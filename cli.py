@@ -171,7 +171,7 @@ def indexar(args):
                 normas="|".join(normas.extraer(largo)) or None,
                 articulos="|".join(normas.articulos(largo)) or None,
                 submaterias="|".join(materias.clasificar(base)),
-                corte_sup=normas.corte_suprema(largo))
+                corte_sup=normas.corte_suprema(largo, f['descripcion']))
             n += 1
     print(f"{n} sentencias indexadas")
 

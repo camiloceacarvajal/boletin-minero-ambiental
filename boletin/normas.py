@@ -96,14 +96,30 @@ _CS_CITADA = re.compile(
     r"Corte Suprema[^.]{0,80}?\bRol\b[^.]{0,40}?(\d{1,6})[\s\-]+(\d{4})", re.I)
 
 
-def corte_suprema(texto):
-    """'anexada' si el fallo de la CS viene en el PDF; 'citada' si solo se
-    invoca su jurisprudencia; None si no aparece."""
-    if not texto:
-        return None
-    m = _CS_ANEXADO.search(texto)
+# El propio listado del 2TA rotula la causa cuando la Corte ya falló, y a veces
+# con el rol de la casación. Sale gratis y no necesita el PDF ni OCR.
+_CS_LISTADO = re.compile(
+    r"[Ss]entencia de la (Excma?\.?|Excelent[íi]sima) Corte Suprema"
+    r"(?:[^.]{0,90}?rol\s*N?[°º]?\s*([\d.]{1,9})\s*[-–]?\s*(\d{4}))?", re.I)
+
+
+def corte_suprema(texto, descripcion=None):
+    """Rastro de la Corte Suprema sobre esta causa.
+
+    'anexada' -> el fallo de casación viene dentro del PDF
+    'confirmada en casación' -> el tribunal lo anuncia en su listado
+    'citada' -> solo se invoca jurisprudencia de la Corte
+    """
+    if texto:
+        m = _CS_ANEXADO.search(texto)
+        if m:
+            return f"anexada · {m.group(1)} Sala"
+    m = _CS_LISTADO.search(descripcion or "")
     if m:
-        return f"anexada · {m.group(1)} Sala"
-    if _CS_CITADA.search(texto):
+        if m.group(2):
+            rol = m.group(2).strip(".").replace(".", "")   # '117.379.' -> '117379'
+            return f"casación rol {_norm(rol) if len(rol) > 3 else rol}-{m.group(3)}"
+        return "resuelta en casación"
+    if texto and _CS_CITADA.search(texto):
         return "citada"
     return None
