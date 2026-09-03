@@ -104,28 +104,23 @@ texto. `extraer` los detecta y los marca `estado_texto='escaneado'` en vez de
 guardar una cadena vacía; `ocr` los rescata con tesseract en español. Es lento
 (1-3 s por página), así que va como paso aparte y opcional.
 
-## Dónde quedó (1 de septiembre de 2026)
+## Dónde quedó (2 de septiembre de 2026)
 
-De las 106 sentencias mineras:
+**Las 103 sentencias mineras tienen doctrina y resumen redactados.**
 
 | | |
 |---|---|
-| con texto íntegro | 52 |
-| con normas citadas | 35 |
-| con artículos indexados | 45 |
-| con titular | 40 |
-| con resumen | 40 |
-| **pendientes de OCR** | **17** |
+| doctrina + resumen | 103 / 103 |
+| fecha del fallo | 102 |
+| región | 93 |
+| enlace al expediente | 61 |
+| sentencia en PDF | 67 |
+| texto íntegro | 66 |
+| artículos indexados | 59 |
+| normas citadas | 38 |
+| rastro de la Corte Suprema | 27 |
 
-Para retomar, en este orden:
+Lo que falta es cobertura, no calidad: 37 causas no publican PDF (solo enlace al
+expediente), y de ahí que el índice de normas cubra 38 y no 103.
 
-```bash
-python3 cli.py ocr --minero --n 20   # ~50 s por sentencia
-python3 cli.py indexar
-python3 cli.py preparar              # vuelca a pendientes.json para redactar
-python3 cli.py cargar
-python3 cli.py veta
-```
-
-Lo que falta no es código: son las doctrinas por redactar. 40 de 106 están
-escritas; el resto sale de `preparar` → redactar → `cargar`.
+Siguiente paso natural: sumar el 3.º T.A. de Valdivia como tercera fuente.

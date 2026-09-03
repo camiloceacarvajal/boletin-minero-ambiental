@@ -95,7 +95,11 @@ def segundo_tribunal_ambiental():
                 "caratulado": texto.split(". Relacionado con")[0][:300],
                 "descripcion": texto,
                 "region": _campo(texto, "Región"),
-                "fecha_fallo": _fecha_iso(_campo(texto, "Fecha del fallo")),
+                # Las solicitudes (S-) y algunas consultas rotulan la fecha como
+                # "Fecha Resolución" en vez de "Fecha del fallo".
+                "fecha_fallo": _fecha_iso(_campo(texto, "Fecha del fallo")
+                                          or _campo(texto, "Fecha Resoluci[óo]n")
+                                          or _campo(texto, "Fecha de la resoluci[óo]n")),
                 "resuelve": (_campo(texto, "Resuelve") or "").rstrip(".").lower() or None,
                 "url_pdf": pdf,
                 "url_expediente": expediente,
