@@ -208,9 +208,15 @@ else:
             aciertos += 1
         else:
             fallos += 1
-    tasa = 100 * aciertos // max(aciertos + fallos, 1)
-    prueba(f"la deducción del resultado acierta >=95% ({tasa}%)", tasa >= 95,
-           f"{aciertos}/{aciertos + fallos}")
+    muestras = aciertos + fallos
+    if muestras < 10:
+        # Sin PDFs descargados no hay nada que medir. Pasa en integración
+        # continua, donde la base se rehace desde el raspado y el curado.
+        print(f"  --   deducción del resultado: sin muestra ({muestras} casos con texto)")
+    else:
+        tasa = 100 * aciertos // muestras
+        prueba(f"la deducción del resultado acierta >=95% ({tasa}%)", tasa >= 95,
+               f"{aciertos}/{muestras}")
 
     prueba("el 1TA trae titular y resumen del tribunal",
            q("SELECT COUNT(*) FROM sentencias WHERE fuente='1ta' AND titular IS NULL") == 0)

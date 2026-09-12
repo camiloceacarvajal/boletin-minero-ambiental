@@ -11,7 +11,10 @@
   python3 cli.py preparar            # vuelca a pendientes.json para redactarlo
   python3 cli.py cargar              # y lo devuelve a la base
   python3 cli.py resumir --n 10      # alternativa: API de pago
-  python3 cli.py veta               # BOLETÍN MINERO -> publico/veta.html
+  python3 cli.py exportar            # guarda la capa curada, versionable en git
+  python3 cli.py importar            # la restaura sobre lo recién raspado
+  python3 cli.py sitio               # SITIO COMPLETO -> publico/ (GitHub Pages)
+  python3 cli.py veta               # solo el boletín -> publico/veta.html
   python3 cli.py publicar            # boletín general -> publico/index.html
   python3 cli.py reportar --dias 7   # reporte del periodo, listo para PDF
 """
@@ -235,6 +238,46 @@ def veta(args):
     print(f"{len(filas)} sentencias mineras -> {ruta}")
 
 
+def exportar(args):
+    """Guarda la capa curada en datos/curado.json, versionable en git."""
+    from boletin import curado
+    with almacen.abrir(DB) as con:
+        n = curado.exportar(con)
+    print(f"{n} sentencias curadas -> {curado.RUTA}")
+
+
+def importar(args):
+    """Vuelca datos/curado.json sobre lo recién raspado."""
+    from boletin import curado
+    with almacen.abrir(DB) as con:
+        puestas, huerfanas = curado.importar(con)
+    print(f"{puestas} sentencias restauradas desde {curado.RUTA}")
+    if huerfanas:
+        print(f"  aviso: {huerfanas} curadas ya no aparecen en el listado del tribunal")
+
+
+def sitio_completo(args):
+    """Arma el sitio entero para GitHub Pages: portada, boletín y reporte."""
+    from datetime import date, timedelta
+    with almacen.abrir(DB) as con:
+        mineras = [dict(r) for r in con.execute(
+            "SELECT * FROM sentencias WHERE minero = 1 ORDER BY fecha_fallo DESC")]
+        curadas = [dict(r) for r in con.execute(
+            "SELECT * FROM sentencias WHERE titular IS NOT NULL "
+            "AND fecha_fallo IS NOT NULL ORDER BY fecha_fallo DESC")]
+    pub = BASE / "publico"
+    sitio.minero(mineras, destino=pub / "veta.html", plantillas=BASE / "plantillas")
+    hasta = date.today().isoformat()
+    sitio.reporte(curadas, destino=pub / "reporte.html", plantillas=BASE / "plantillas",
+                  desde=min(c["fecha_fallo"] for c in curadas), hasta=hasta,
+                  titulo="La Veta — jurisprudencia minero-ambiental")
+    sitio.portada_sitio(mineras, destino=pub / "index.html",
+                        plantillas=BASE / "plantillas", reporte="reporte.html")
+    # GitHub Pages salta los archivos y carpetas que empiezan con guion bajo.
+    (pub / ".nojekyll").write_text("")
+    print(f"sitio en {pub}/  ->  index.html · veta.html · reporte.html")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -262,7 +305,10 @@ def main():
     a = sub.add_parser("cargar")
     a.add_argument("--archivo", default=str(BASE / "pendientes.json"))
     a.set_defaults(f=cargar)
+    a = sub.add_parser("exportar"); a.set_defaults(f=exportar)
+    a = sub.add_parser("importar"); a.set_defaults(f=importar)
     a = sub.add_parser("veta"); a.set_defaults(f=veta)
+    a = sub.add_parser("sitio"); a.set_defaults(f=sitio_completo)
     a = sub.add_parser("reportar")
     a.add_argument("--dias", type=int, default=7)
     a.add_argument("--desde"); a.add_argument("--hasta")

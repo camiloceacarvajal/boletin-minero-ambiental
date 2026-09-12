@@ -7,3 +7,6 @@ __pycache__/
 boletin.db*
 pdfs/
 pendientes.json
+
+# el sitio lo arma `cli.py sitio` y lo despliega GitHub Actions
+publico/

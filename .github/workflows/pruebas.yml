@@ -1,0 +1,47 @@
+name: pruebas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+          pip install -q requests beautifulsoup4 lxml jinja2
+
+      - name: Pruebas que no necesitan red
+        # La base no existe en un checkout limpio: pruebas.py detecta eso y
+        # corre solo las unitarias, que son la mayoría.
+        run: python3 pruebas.py
+
+      - name: El curado es JSON válido y sin roles repetidos
+        run: |
+          python3 - <<'PY'
+          import json, collections, sys
+          d = json.load(open("datos/curado.json"))
+          claves = [(r["fuente"], r["rol"]) for r in d]
+          rep = [k for k, n in collections.Counter(claves).items() if n > 1]
+          print(f"{len(d)} sentencias curadas, {len(set(claves))} claves únicas")
+          if rep:
+              print("REPETIDAS:", rep[:5]); sys.exit(1)
+          faltan = [r for r in d if not r.get("titular") and not r.get("normas")]
+          if faltan:
+              print(f"{len(faltan)} entradas sin titular ni normas"); sys.exit(1)
+          PY

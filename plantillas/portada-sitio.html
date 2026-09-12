@@ -1,0 +1,107 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ titulo }}</title>
+<meta name="description" content="{{ bajada }}">
+<meta property="og:title" content="{{ titulo }}">
+<meta property="og:description" content="{{ bajada }}">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf8f5;--panel:#fff;--tinta:#1c1917;--suave:#78716c;--tenue:#a8a29e;
+      --linea:#e7e2db;--cobre:#b45309;--cobre-suave:#fef3e2;
+      --sombra:0 1px 2px rgba(28,25,23,.06),0 8px 24px -12px rgba(28,25,23,.12)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#14110f;--panel:#1c1917;--tinta:#f5f1ec;--suave:#a8a29e;--tenue:#78716c;
+  --linea:#2c2724;--cobre:#f59e0b;--cobre-suave:#3a2a12;
+  --sombra:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tinta);
+     font:16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.caja{max-width:46rem;margin:0 auto;padding:4rem 1.5rem 5rem}
+.marca{display:flex;align-items:center;gap:.6rem;margin-bottom:1.6rem}
+svg{width:2.2rem;height:2.2rem;flex:none}
+h1{font-family:Fraunces,Georgia,serif;font-size:clamp(2rem,5.5vw,3rem);font-weight:600;
+   line-height:1.05;letter-spacing:-.02em;margin:0}
+h1 em{font-style:normal;color:var(--cobre)}
+.bajada{color:var(--suave);font-size:1.08rem;margin:.9rem 0 0}
+.cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));
+        gap:.7rem;margin:2.5rem 0}
+.cifra{background:var(--panel);border:1px solid var(--linea);border-radius:10px;
+       padding:.85rem 1rem;box-shadow:var(--sombra)}
+.cifra b{display:block;font-family:Fraunces,serif;font-size:1.7rem;font-weight:600;line-height:1}
+.cifra span{display:block;font-size:.7rem;color:var(--tenue);text-transform:uppercase;
+            letter-spacing:.09em;margin-top:.35rem}
+.cifra:first-child b{color:var(--cobre)}
+.tarjetas{display:grid;gap:.8rem;margin:2rem 0}
+a.tarjeta{display:block;background:var(--panel);border:1px solid var(--linea);
+          border-radius:12px;padding:1.3rem 1.5rem;text-decoration:none;color:inherit;
+          box-shadow:var(--sombra);transition:transform .15s,border-color .15s}
+a.tarjeta:hover{transform:translateY(-2px);border-color:var(--cobre)}
+a.tarjeta h2{font-family:Fraunces,serif;font-size:1.2rem;font-weight:600;margin:0 0 .3rem}
+a.tarjeta p{margin:0;color:var(--suave);font-size:.92rem}
+a.tarjeta .ir{color:var(--cobre);font-size:.82rem;font-weight:500;margin-top:.6rem;display:block}
+h3{font-size:.78rem;text-transform:uppercase;letter-spacing:.11em;color:var(--tenue);
+   margin:2.8rem 0 .8rem;font-weight:600}
+p{margin:0 0 1rem}
+footer{margin-top:3rem;padding-top:1.4rem;border-top:1px solid var(--linea);
+       color:var(--tenue);font-size:.83rem}
+a{color:var(--cobre)}
+code{background:var(--cobre-suave);color:var(--cobre);padding:.1rem .35rem;
+     border-radius:4px;font-size:.88em}
+</style>
+<div class="caja">
+<div class="marca">
+  <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+    <path d="M16 2 4 9v14l12 7 12-7V9L16 2z" stroke="var(--cobre)" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M16 2v28M4 9l12 7 12-7" stroke="var(--cobre)" stroke-width="1.2" opacity=".55"/>
+  </svg>
+  <strong style="font-family:Fraunces,serif;letter-spacing:.02em">LA VETA</strong>
+</div>
+<h1>Jurisprudencia <em>minero-ambiental</em> chilena</h1>
+<p class="bajada">{{ bajada }}</p>
+
+<div class="cifras">
+  <div class="cifra"><b>{{ n_mineras }}</b><span>Sentencias</span></div>
+  <div class="cifra"><b>{{ n_doctrina }}</b><span>Con doctrina</span></div>
+  <div class="cifra"><b>{{ n_cs }}</b><span>Corte Suprema</span></div>
+  <div class="cifra"><b>3</b><span>Tribunales</span></div>
+</div>
+
+<div class="tarjetas">
+  <a class="tarjeta" href="veta.html">
+    <h2>El boletín</h2>
+    <p>Las {{ n_mineras }} sentencias, con buscador y filtros por tribunal,
+       resultado, materia y normas citadas.</p>
+    <span class="ir">Abrir →</span>
+  </a>
+  <a class="tarjeta" href="{{ reporte }}">
+    <h2>Reporte imprimible</h2>
+    <p>Las destacadas primero, con índice y maquetado para guardar en PDF.</p>
+    <span class="ir">Abrir →</span>
+  </a>
+</div>
+
+<h3>Cómo se arma</h3>
+<p>Un raspador en Python recorre los listados públicos de los tres tribunales
+ambientales, descarga las sentencias, extrae su texto —con OCR cuando el fallo
+se publicó como imagen— e indexa las normas que cita. La doctrina de cada fallo
+está redactada leyendo su parte resolutiva.</p>
+<p>No usa ningún modelo de lenguaje en ejecución ni servicio de pago. Se
+actualiza solo cada semana.</p>
+
+<h3>Advertencia</h3>
+<p>Los resúmenes son orientativos y no reemplazan la lectura del fallo: cada
+ficha enlaza al texto original publicado por el tribunal. Antes de usar esto
+para litigar, que lo revise un abogado.</p>
+
+<footer>
+  Generado el {{ generado }} ·
+  <a href="https://github.com/camiloceacarvajal/boletin-minero-ambiental">Código en GitHub</a> ·
+  Fuentes: <a href="https://1ta.cl">1.º T.A.</a>,
+  <a href="https://tribunalambiental.cl">2.º T.A.</a>,
+  <a href="https://3ta.cl">3.º T.A.</a>
+</footer>
+</div>

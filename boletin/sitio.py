@@ -121,3 +121,24 @@ def minero(filas, destino, plantillas="plantillas", titulo="La Veta — jurispru
     salida.parent.mkdir(parents=True, exist_ok=True)
     salida.write_text(html, encoding="utf-8")
     return salida
+
+
+def portada_sitio(filas, destino, plantillas="plantillas", reporte="reporte.html"):
+    """Portada de GitHub Pages: enlaza el boletín y el reporte."""
+    env = Environment(loader=FileSystemLoader(plantillas),
+                      autoescape=select_autoescape(["html"]))
+    ss = [dict(f) for f in filas]
+    html = env.get_template("portada-sitio.html").render(
+        titulo="La Veta — jurisprudencia minero-ambiental chilena",
+        bajada=("Las sentencias de los tres tribunales ambientales de Chile sobre "
+                "faenas, concesiones y proyectos mineros: clasificadas, resumidas "
+                "y enlazadas a su texto íntegro."),
+        n_mineras=len(ss),
+        n_doctrina=sum(1 for s in ss if s.get("titular")),
+        n_cs=sum(1 for s in ss if s.get("corte_sup")),
+        reporte=reporte,
+        generado=_en_palabras(date.today().isoformat()))
+    salida = Path(destino)
+    salida.parent.mkdir(parents=True, exist_ok=True)
+    salida.write_text(html, encoding="utf-8")
+    return salida

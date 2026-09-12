@@ -1,0 +1,95 @@
+name: publicar
+
+# Cada lunes a las 09:00 en Chile continental (12:00 UTC), y a mano cuando haga
+# falta. Solo raspa los listados y vuelve a armar el sitio: no descarga PDFs ni
+# corre OCR, porque todo lo que sale de ellos está en datos/curado.json.
+on:
+  schedule:
+    - cron: "0 12 * * 1"
+  push:
+    branches: [main]
+    paths:
+      - "boletin/**"
+      - "plantillas/**"
+      - "datos/curado.json"
+      - "cli.py"
+      - ".github/workflows/publicar.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+          pip install -q requests beautifulsoup4 lxml jinja2
+
+      - name: Raspar los tres tribunales
+        run: |
+          python3 cli.py ingestar --fuente 1ta
+          python3 cli.py ingestar --fuente 2ta
+          python3 cli.py ingestar --fuente 3ta
+
+      - name: Restaurar la capa curada
+        run: python3 cli.py importar
+
+      - name: Clasificar e indexar
+        # En este orden: clasificar lee el titular, que lo pone el paso anterior.
+        run: |
+          python3 cli.py clasificar
+          python3 cli.py indexar
+
+      - name: Armar el sitio
+        run: python3 cli.py sitio
+
+      - name: Pruebas contra la base recién armada
+        run: python3 pruebas.py
+
+      - name: Avisar si aparecieron causas mineras sin doctrina
+        run: |
+          python3 - <<'PY'
+          import sqlite3
+          con = sqlite3.connect("boletin.db")
+          filas = con.execute(
+              "SELECT rol, fuente, fecha_fallo, caratulado FROM sentencias "
+              "WHERE minero = 1 AND titular IS NULL ORDER BY fecha_fallo DESC"
+          ).fetchall()
+          if not filas:
+              print("Sin causas mineras pendientes de redactar.")
+          else:
+              print(f"::warning::{len(filas)} causas mineras nuevas sin doctrina")
+              for rol, fuente, fecha, car in filas[:20]:
+                  print(f"  {fuente}  {rol}  {fecha}  {(car or '')[:70]}")
+          PY
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: publico
+
+  desplegar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v4
