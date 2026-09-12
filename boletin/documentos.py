@@ -34,11 +34,18 @@ def trozos_relevantes(texto, limite_chars=60_000):
 
 
 MINIMO_UTIL = 1500   # bajo esto, el PDF es una imagen escaneada sin capa de texto
+MINIMO_POR_PAGINA = 400   # una resolución de una página son ~900 caracteres
 TIENE_OCR = shutil.which("tesseract") is not None and shutil.which("pdftoppm") is not None
 
 
-def es_escaneado(texto):
-    return len((texto or "").strip()) < MINIMO_UTIL
+def es_escaneado(texto, paginas=None):
+    """Un umbral fijo descarta documentos cortos legítimos: las resoluciones de
+    una página rondan los 900 caracteres. Cuando se sabe cuántas páginas tiene,
+    el umbral se escala; si no, se usa el fijo."""
+    n = len((texto or "").strip())
+    if paginas:
+        return n < min(MINIMO_UTIL, paginas * MINIMO_POR_PAGINA)
+    return n < MINIMO_UTIL
 
 
 def _paginas(ruta):

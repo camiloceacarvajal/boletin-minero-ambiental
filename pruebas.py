@@ -74,6 +74,14 @@ prueba("titular lleva el resultado", t and t.endswith("— acoge"), str(t))
 prueba("titular quita 'Eventual'", t and not t.lower().startswith("eventual"), str(t))
 prueba("sin tabla devuelve None", controversias.titular_tentativo("texto cualquiera") is None)
 
+print("\n== umbral de texto útil ==")
+from boletin.documentos import es_escaneado
+# Una resolución de una página ronda los 900 caracteres: el umbral fijo la
+# descartaba como si fuera una imagen en blanco.
+prueba("913 caracteres en 1 página sirven", not es_escaneado("x" * 913, 1))
+prueba("913 caracteres en 40 páginas no", es_escaneado("x" * 913, 40))
+prueba("vacío es escaneado siempre", es_escaneado("", 1) and es_escaneado(""))
+
 print("\n== normas citadas ==")
 TXT = ("conforme a los artículos 17 N° 3 y 18 de la Ley N° 20.600, y el artículo 53 "
        "de la Ley N° 19.880, en relación con la Ley 19.300 y el D.S. N° 40/2012. "
@@ -183,9 +191,9 @@ else:
     prueba("todo estado_texto es un valor conocido",
            q("SELECT COUNT(*) FROM sentencias WHERE estado_texto IS NOT NULL "
              "AND estado_texto NOT IN ('ok','escaneado','ocr','ocr_fallido')") == 0)
-    prueba(f"ningún texto guardado baja del mínimo útil ({MINIMO_UTIL})",
+    prueba("ningún texto guardado está vacío",
            q("SELECT COALESCE(MIN(LENGTH(TRIM(texto))),99999) FROM sentencias "
-             "WHERE texto IS NOT NULL") >= MINIMO_UTIL)
+             "WHERE texto IS NOT NULL") > 0)
     # El 2TA publica el resultado; el 3TA no. Contrastar la heurística contra el
     # dato real del 2TA es la única forma de saber cuánto vale cuando se aplica
     # al 3TA a ciegas. Medido en 95%: si baja de 90, algo se rompió.

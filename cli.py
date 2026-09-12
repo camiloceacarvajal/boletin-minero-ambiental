@@ -62,7 +62,7 @@ def extraer(args):
         for f in pend:
             try:
                 t = documentos.texto_de_pdf(f["ruta_pdf"])
-                if documentos.es_escaneado(t):
+                if documentos.es_escaneado(t, documentos._paginas(f["ruta_pdf"])):
                     # PDF sin capa de texto: se marca para OCR en vez de guardar basura.
                     almacen.actualizar(con, f["id"], estado_texto="escaneado")
                     print(f"  ocr {f['rol']}  (escaneado, sin capa de texto)")
@@ -143,7 +143,7 @@ def ocr(args):
         for f in pend:
             try:
                 t = documentos.ocr(f["ruta_pdf"])
-                if documentos.es_escaneado(t):
+                if documentos.es_escaneado(t, documentos._paginas(f["ruta_pdf"])):
                     almacen.actualizar(con, f["id"], estado_texto="ocr_fallido")
                     print(f"  --  {f['rol']}: el OCR no sacó texto útil")
                     continue
