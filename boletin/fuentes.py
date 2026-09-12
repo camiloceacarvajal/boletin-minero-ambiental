@@ -14,13 +14,33 @@ from datetime import date
 import requests
 from bs4 import BeautifulSoup
 
-CABECERAS = {"User-Agent": "boletin-jurisprudencia/0.1 (+contacto: ccea@mbienes.cl)"}
+# Un User-Agent que se identifica y deja dónde reclamar, sin exponer un correo
+# personal en un repositorio público. Algunos servidores rechazan agentes que no
+# parecen navegador; ahí está NAVEGADOR, que solo se usa como reintento.
+CABECERAS = {
+    "User-Agent": "boletin-jurisprudencia/1.0 "
+                  "(+https://github.com/camiloceacarvajal/boletin-minero-ambiental)",
+    "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+    "Accept-Language": "es-CL,es;q=0.9",
+}
+NAVEGADOR = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+    "Accept-Language": "es-CL,es;q=0.9",
+}
 PAUSA = 1.0  # segundos entre peticiones: cortesía con el servidor
 
 
 def _get(url, **kw):
+    """Pide la página identificándose. Si el servidor responde 403 o 429 al
+    agente propio —pasa desde las IP de integración continua—, reintenta una vez
+    con un User-Agent de navegador antes de darse por vencido."""
     time.sleep(PAUSA)
     r = requests.get(url, headers=CABECERAS, timeout=45, **kw)
+    if r.status_code in (403, 406, 429):
+        time.sleep(PAUSA * 2)
+        r = requests.get(url, headers=NAVEGADOR, timeout=45, **kw)
     r.raise_for_status()
     return r
 

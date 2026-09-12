@@ -41,7 +41,29 @@ jobs:
           print(f"{len(d)} sentencias curadas, {len(set(claves))} claves únicas")
           if rep:
               print("REPETIDAS:", rep[:5]); sys.exit(1)
-          faltan = [r for r in d if not r.get("titular") and not r.get("normas")]
-          if faltan:
-              print(f"{len(faltan)} entradas sin titular ni normas"); sys.exit(1)
+          sys.path.insert(0, ".")
+          from boletin.curado import CAMPOS
+          vacias = [r for r in d if not any(c in r for c in CAMPOS)]
+          if vacias:
+              print(f"{len(vacias)} entradas sin ningún dato curado:", vacias[:3])
+              sys.exit(1)
+          print(f"sin entradas vacías (campos válidos: {', '.join(CAMPOS)})")
+          PY
+
+      - name: Los respaldos de raspado están completos
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          from pathlib import Path
+          sys.path.insert(0, ".")
+          from boletin.fuentes import FUENTES
+          for fuente in FUENTES:
+              ruta = Path("datos/raspado") / f"{fuente}.json"
+              if not ruta.exists():
+                  print(f"falta el respaldo de {fuente}"); sys.exit(1)
+              d = json.loads(ruta.read_text())
+              sin_rol = [r for r in d if not r.get("rol")]
+              print(f"  {fuente}: {len(d)} sentencias")
+              if not d or sin_rol:
+                  print(f"  respaldo de {fuente} vacío o con filas sin rol"); sys.exit(1)
           PY

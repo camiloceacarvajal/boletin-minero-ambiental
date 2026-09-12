@@ -30,12 +30,28 @@ PDFS = BASE / "pdfs"
 
 
 def ingestar(args):
-    nuevas = total = 0
+    from boletin import curado
+    try:
+        registros = list(fuentes.FUENTES[args.fuente]())
+        if not registros:
+            raise RuntimeError("el listado vino vacío")
+        curado.guardar_raspado(args.fuente, registros)
+        origen = "la fuente"
+    except Exception as e:
+        registros = curado.leer_raspado(args.fuente)
+        if registros is None:
+            print(f"{args.fuente}: {type(e).__name__}: {e}", file=sys.stderr)
+            sys.exit(f"{args.fuente} no responde y no hay respaldo en datos/raspado/")
+        # No es un error fatal: se publica el último listado bueno y se avisa.
+        print(f"::warning::{args.fuente} no responde ({type(e).__name__}), "
+              f"se usa el respaldo de datos/raspado/", file=sys.stderr)
+        origen = "el respaldo"
+
+    nuevas = 0
     with almacen.abrir(DB) as con:
-        for reg in fuentes.FUENTES[args.fuente]():
-            total += 1
+        for reg in registros:
             nuevas += almacen.guardar(con, reg)
-    print(f"{total} sentencias en la fuente, {nuevas} nuevas")
+    print(f"{len(registros)} sentencias en {origen}, {nuevas} nuevas")
 
 
 def bajar(args):

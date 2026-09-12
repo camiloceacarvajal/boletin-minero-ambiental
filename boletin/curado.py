@@ -63,3 +63,27 @@ def importar(con, ruta=RUTA):
             huerfanas += 1
     con.commit()
     return puestas, huerfanas
+
+
+# --- respaldo del raspado --------------------------------------------------
+# Si un tribunal no responde —bloquea la IP de integración continua, se cae, o
+# cambia la página—, sin respaldo sus sentencias desaparecen del sitio, porque
+# la base se rehace en cada corrida. Se guarda el último raspado bueno y se usa
+# como red: mejor publicar un listado de la semana pasada que ninguno.
+DIR_RASPADO = Path("datos/raspado")
+
+
+def guardar_raspado(fuente, registros, carpeta=DIR_RASPADO):
+    carpeta = Path(carpeta)
+    carpeta.mkdir(parents=True, exist_ok=True)
+    ruta = carpeta / f"{fuente}.json"
+    ruta.write_text(json.dumps(registros, ensure_ascii=False, indent=1, sort_keys=True) + "\n",
+                    encoding="utf-8")
+    return ruta
+
+
+def leer_raspado(fuente, carpeta=DIR_RASPADO):
+    ruta = Path(carpeta) / f"{fuente}.json"
+    if not ruta.exists():
+        return None
+    return json.loads(ruta.read_text(encoding="utf-8"))
