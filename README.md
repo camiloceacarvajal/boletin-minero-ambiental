@@ -1,8 +1,42 @@
-# La Veta — boletín de jurisprudencia minero-ambiental
+# La Veta — jurisprudencia minero-ambiental chilena
 
-Ingesta, clasificación, resumen y publicación de sentencias de los tribunales
-ambientales chilenos sobre faenas, concesiones y proyectos mineros.
-Mismo modelo que [La Quinta Sala](https://laquintasala.cl), en Python, **sin API de pago**.
+Ingesta, clasifica, indexa y publica las sentencias de los tres tribunales
+ambientales de Chile sobre faenas, concesiones y proyectos mineros.
+**109 fallos, todos con doctrina y resumen redactados.**
+
+![El boletín generado](docs/boletin.png)
+
+| | |
+|---|---|
+| Fuentes | 1.º T.A. Antofagasta · 2.º T.A. Santiago · 3.º T.A. Valdivia |
+| Base | 745 sentencias, 109 clasificadas como mineras |
+| Salida | una página HTML autocontenida, con buscador y filtros, sin dependencias |
+| Coste | **cero**: ni API de pago ni servicios externos |
+| Pruebas | 90, incluidas las que miden la precisión de las heurísticas |
+
+Mismo modelo de producto que [La Quinta Sala](https://laquintasala.cl) —boletín
+de jurisprudencia por suscripción—, resuelto en Python y sin modelo de lenguaje
+en el camino.
+
+## Tres problemas que hubo que resolver
+
+**La fuente de la Corte Suprema está cerrada.** `juris.pjud.cl` tiene
+`Disallow: /` para todo agente y su buscador va tras reCAPTCHA. En vez de
+forzarlo, el proyecto se apoya en los tribunales ambientales, que publican
+abierto — y recupera rastro de la Corte por la puerta lateral: 28 de las 109
+causas llevan el rol de casación o el fallo completo anexado al PDF del tribunal.
+
+**Cada tribunal publica una cosa distinta.** El 1.º T.A. redacta titular y
+resumen en su sala de prensa; el 2.º publica el resultado y el PDF; el 3.º es el
+único que dice quién redactó el fallo, pero no cómo se resolvió. Ese último dato
+se deduce de la parte resolutiva con un **98 % de acierto**, medido contra los
+50 casos donde el 2.º T.A. sí lo publica — y se muestra marcado como inferido,
+nunca mezclado con el dato oficial.
+
+**Los fallos anteriores a 2019 son imágenes escaneadas.** Se rescatan con OCR,
+pero pasar las 140 páginas de cada uno a 200 ppp toma diez minutos por sentencia.
+Rasterizar solo las puntas —doce páginas del principio y ocho del final, donde
+viven los VISTOS y lo resolutivo— lo baja a 51 segundos sin perder nada útil.
 
 ## Todo de una vez
 
@@ -139,4 +173,4 @@ guardar una cadena vacía; `ocr` los rescata con tesseract en español. Es lento
 | artículos indexados | 61 |
 | con vídeo de alegatos | 2 |
 
-Tres tribunales, 745 sentencias en la base. `pruebas.py`: 88 pruebas.
+Tres tribunales, 745 sentencias en la base. `pruebas.py`: 90 pruebas.
