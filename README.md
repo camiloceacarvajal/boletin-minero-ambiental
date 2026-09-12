@@ -80,29 +80,45 @@ iframe en `/reporte-semanal/`, con 88 sentencias de una semana. Campos: `sala`,
 
 | | La Quinta Sala | La Veta |
 |---|---|---|
-| Sentencias | 88 (una semana) | 106 (2016-2026) |
-| Rol de la causa | **no** | 106/106 |
-| Fecha del fallo | solo el rango de la semana | 93/106 |
-| Región | **no** | 96/106 |
-| Enlace a la sentencia | **no** | 15/106 |
-| Enlace al expediente | **no** | 105/106 |
-| Doctrina de una línea | 88/88, redactada | 37/106, automática |
-| Resumen | 88/88, redactado | 30/106 |
-| Normas citadas | a mano | extraídas del texto íntegro |
-| Filtros | sala, resultado | tribunal, resultado, PDF, 9 materias |
+| Sentencias | 88 (una semana) | 109 (2013-2026) |
+| Doctrina de una línea | 88/88 | **109/109** |
+| Resumen | 88/88 | **109/109** |
+| Rol de la causa | **no** | 109 |
+| Fecha del fallo | solo el rango semanal | 108 |
+| Región | **no** | 95 |
+| Enlace a la sentencia | **no** | 73 |
+| Enlace al expediente | **no** | 65 |
+| Normas citadas | a mano | del texto íntegro (41) |
+| Artículos indexados | **no** | 62 |
+| Rastro de la Corte Suprema | **no** | 28 |
+| Ministro redactor | **no** | 4 (solo 3.º T.A.) |
+| Vídeo de los alegatos | **no** | 3 |
+| Filtros | sala, resultado | tribunal, resultado, PDF, Corte Suprema, 9 materias |
 
-**Dónde les ganamos:** trazabilidad. Ellos publican doctrina sin rol, sin fecha
+**Dónde les ganamos: trazabilidad.** Ellos publican doctrina sin rol, sin fecha
 individual, sin región y sin enlace al fallo — hay que creerles. Cada ficha nuestra
-lleva el rol, la fecha, la región y el enlace al expediente del tribunal.
-Y como tenemos el PDF, el índice de normas sale del texto, no de lo que el editor
-recordó teclear: se puede preguntar qué fallos aplican el art. 17 N° 8 de la Ley
-20.600 y obtener la respuesta.
+lleva de vuelta al expediente del tribunal. Y como tenemos el PDF, el índice de
+normas sale del texto y no de lo que el editor recordó teclear: se puede preguntar
+qué fallos aplican el art. 17 N° 8 de la Ley 20.600 y obtener la respuesta.
 
-**Dónde nos ganan, y es lo que importa:** la redacción. Sus 88 doctrinas están
-escritas por un abogado, una por una. Las nuestras cubren 37 de 106 y salen de la
-tabla de contenidos del propio tribunal — sirven para orientarse, no son doctrina.
-Ese hueco no lo cierra más código: se cierra redactando, o descargando los 91 PDF
-que faltan para que el índice de normas cubra el total.
+**Dónde nos ganan: la profundidad del texto, y quién lo firma.**
+
+La cobertura ya está pareja —109 de 109 con doctrina y resumen redactados leyendo
+la parte resolutiva de cada fallo, no sacados de la tabla de contenidos—. Lo que
+sigue sin estar parejo es el fondo:
+
+- Sus resúmenes promedian **740 caracteres**; los nuestros, **407**. Casi la mitad.
+  Los suyos explican el razonamiento; los nuestros dicen qué se discutió y cómo
+  terminó.
+- Sus doctrinas promedian 124 caracteres y las nuestras 96, por la misma razón.
+- Y la diferencia que ninguna métrica recoge: **las suyas las escribe un abogado.**
+  Las nuestras las escribió un modelo leyendo el fallo. Están ancladas al
+  resolutivo y no inventan, pero antes de que alguien litigue con esto delante,
+  un abogado tiene que revisarlas.
+
+Eso no lo cierra más código. Lo que sí cierra el código es el otro hueco: 36 de
+las 109 causas no publican PDF —solo enlace al expediente electrónico—, y por eso
+el índice de normas llega a 41 y no a 109.
 
 ## PDF escaneados
 
