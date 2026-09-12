@@ -1,22 +1,49 @@
 # La Veta — jurisprudencia minero-ambiental chilena
 
+[![pruebas](https://github.com/camiloceacarvajal/boletin-minero-ambiental/actions/workflows/pruebas.yml/badge.svg)](https://github.com/camiloceacarvajal/boletin-minero-ambiental/actions/workflows/pruebas.yml)
+[![publicar](https://github.com/camiloceacarvajal/boletin-minero-ambiental/actions/workflows/publicar.yml/badge.svg)](https://github.com/camiloceacarvajal/boletin-minero-ambiental/actions/workflows/publicar.yml)
+[![codeql](https://github.com/camiloceacarvajal/boletin-minero-ambiental/actions/workflows/codeql.yml/badge.svg)](https://github.com/camiloceacarvajal/boletin-minero-ambiental/actions/workflows/codeql.yml)
+[![licencia MIT](https://img.shields.io/badge/licencia-MIT-b45309)](LICENSE)
+
+### → **[Ver el boletín en vivo](https://camiloceacarvajal.github.io/boletin-minero-ambiental/)**
+
 Ingesta, clasifica, indexa y publica las sentencias de los tres tribunales
 ambientales de Chile sobre faenas, concesiones y proyectos mineros.
-**109 fallos, todos con doctrina y resumen redactados.**
+**110 fallos, todos con doctrina y resumen redactados.** Se actualiza solo cada
+lunes.
 
 ![El boletín generado](docs/boletin.png)
 
 | | |
 |---|---|
 | Fuentes | 1.º T.A. Antofagasta · 2.º T.A. Santiago · 3.º T.A. Valdivia |
-| Base | 745 sentencias, 109 clasificadas como mineras |
+| Base | 760 sentencias, 110 clasificadas como mineras |
 | Salida | una página HTML autocontenida, con buscador y filtros, sin dependencias |
-| Coste | **cero**: ni API de pago ni servicios externos |
-| Pruebas | 90, incluidas las que miden la precisión de las heurísticas |
+| Coste | **cero**: ni API de pago ni servidor. GitHub Pages + Actions |
+| Pruebas | 90, más validación del dato curado en cada `push` |
 
 Mismo modelo de producto que [La Quinta Sala](https://laquintasala.cl) —boletín
 de jurisprudencia por suscripción—, resuelto en Python y sin modelo de lenguaje
 en el camino.
+
+## Cómo se mantiene solo
+
+Los datos son de dos clases, y esa separación es lo que permite que se publique
+solo sin servidor ni base de datos:
+
+| | Qué es | Dónde vive |
+|---|---|---|
+| **Raspado** | rol, carátula, fecha, región, enlaces | se vuelve a pedir al tribunal en cada corrida; copia de respaldo en `datos/raspado/` |
+| **Curado** | doctrina y resumen redactados, normas y artículos extraídos del PDF, rastro de la Corte Suprema | versionado en `datos/curado.json` |
+
+Cada lunes, GitHub Actions raspa los tres listados, vuelca encima la capa curada,
+clasifica, indexa y despliega en Pages. Tarda **38 segundos** y no descarga ni un
+PDF, porque todo lo que sale de ellos ya está en el curado. Si un tribunal no
+responde —el 1.º T.A. bloquea las IP de integración continua—, se publica su
+último listado bueno y el registro queda con un aviso.
+
+Si aparece una causa minera nueva sin doctrina, la corrida lo anuncia con un
+`::warning::` y se redacta a mano; el resto del sitio se publica igual.
 
 ## Tres problemas que hubo que resolver
 

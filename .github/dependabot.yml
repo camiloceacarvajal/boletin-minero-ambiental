@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Las acciones de los workflows se anclan por versión mayor: esto avisa
+  # cuando sale una nueva o cuando la anclada tiene una vulnerabilidad.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "acciones"
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "dependencias"
