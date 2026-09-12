@@ -25,6 +25,14 @@ FUERTE = re.compile(r"""
  cat[óo]dos\ de\ cobre|concentrado\ de\ cobre|salmuera
 """, re.I | re.X)
 
+# Una razón social que ES el giro basta por sí sola: 'Canteras Lonco S.A.' o
+# 'Áridos y Constructora San Vicente Ltda.' no traen ninguna otra palabra de
+# contexto, y en el 3TA la carátula es todo lo que se publica.
+RAZON_SOCIAL = re.compile(
+    r"\b(canteras?|[áa]ridos?|minera|min[ei]ra|carb[óo]n|extractora|"
+    r"p[ée]treos?|lixiviaci[óo]n|metal[úu]rgica)\b[^,.;]{0,60}?"
+    r"\b(s\.?\s?a\.?|ltda\.?|limitada|spa\b|e\.?i\.?r\.?l\.?|y\s+c[íi]a)", re.I)
+
 DEBIL = re.compile(r"\b(cobre|oro|plata|litio|hierro|molibdeno|salar|"
                    r"[áa]ridos?|canteras?|explotaci[óo]n)\b", re.I)
 CONTEXTO = re.compile(r"\b(extracci[óo]n|yacimiento|mineral|explotaci[óo]n|"
@@ -33,11 +41,13 @@ CONTEXTO = re.compile(r"\b(extracci[óo]n|yacimiento|mineral|explotaci[óo]n|"
 
 def es_minero(texto):
     t = texto or ""
-    if FUERTE.search(t):
+    if FUERTE.search(t) or RAZON_SOCIAL.search(t):
         return True
     return bool(DEBIL.search(t) and CONTEXTO.search(t))
 
 
 def puntaje(texto):
     """Cuántas señales fuertes distintas: sirve para ordenar por 'cuán minero'."""
-    return len({m.group(0).lower() for m in FUERTE.finditer(texto or "")})
+    t = texto or ""
+    n = len({m.group(0).lower() for m in FUERTE.finditer(t)})
+    return n + (1 if RAZON_SOCIAL.search(t) else 0)

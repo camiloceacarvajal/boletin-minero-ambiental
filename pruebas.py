@@ -29,8 +29,15 @@ POSITIVOS = ["multa a Codelco por la SMA", "tranque de relaves El Torito",
              "Compañía Minera del Pacífico", "pila de lixiviación"]
 # Regresión: 'Andina' (por Codelco División Andina) hacía match dentro de
 # 'Aguas Andinas' y colaba la planta de tratamiento del Mapocho al boletín.
-POSITIVOS += ["Codelco División Andina depósito de lastre", "Codelco División El Salvador"]
+POSITIVOS += ["Codelco División Andina depósito de lastre", "Codelco División El Salvador",
+              # El 3TA solo publica la carátula: la razón social tiene que bastar.
+              "Canteras Lonco S.A con Superintendencia del Medio Ambiente",
+              "Aridos y Constructora San Vicente LTDA.",
+              "Sociedad Comercializadora de Carbón SpA"]
 NEGATIVOS = ["Aguas Andinas S.A. planta de tratamiento",
+             "Salmones Camanchaca S.A. con SMA",
+             "Forestal Arauco S.A. con Servicio de Evaluación Ambiental",
+             "Ilustre Municipalidad de Coronel con SEA",
              "la ciudad de El Salvador en Centroamérica",
              "cordillera andina y su fauna",
              "humedal urbano Tranque La Poza", "Santuario de la Naturaleza Río Sasso",
@@ -113,6 +120,21 @@ prueba("Convenio 169 es consulta indígena",
        "Consulta indígena" in materias.clasificar("aplicación del Convenio 169 a la comunidad"))
 prueba("sin señales cae en 'Ambiental'", materias.clasificar("texto neutro") == ["Ambiental"])
 
+print("\n== resultado deducido del fallo ==")
+RESOLUTIVO = ("SE RESUELVE: 1. Rechazar la excepción de incompetencia opuesta por la "
+              "demandada. 2. Rechazar la alegación de falta de legitimación activa. "
+              "3. Acoger la demanda de reparación por daño ambiental interpuesta por "
+              "el actor. 4. Cada parte pagará sus costas.")
+prueba("lo accesorio no tapa el fondo", controversias.resultado(RESOLUTIVO) == "acoge",
+       str(controversias.resultado(RESOLUTIVO)))
+DISIDENTE = ("SE RESUELVE: 1. Rechazar la reclamación interpuesta. 2. Cada parte pagará "
+             "sus costas. Acordada con el voto en contra del Ministro señor López, "
+             "quien estuvo por acoger la reclamación.")
+prueba("el voto disidente no invierte el resultado",
+       controversias.resultado(DISIDENTE) == "rechaza", str(controversias.resultado(DISIDENTE)))
+prueba("sin parte resolutiva devuelve None", controversias.resultado("texto cualquiera") is None)
+prueba("texto vacío no revienta", controversias.resultado(None) is None)
+
 print("\n== almacén ==")
 tmp = Path("/tmp/prueba_boletin.db")
 tmp.unlink(missing_ok=True)
@@ -141,8 +163,13 @@ else:
     con = sqlite3.connect(db); con.row_factory = sqlite3.Row
     q = lambda s: con.execute(s).fetchone()[0]
     total, mineras = q("SELECT COUNT(*) FROM sentencias"), q("SELECT COUNT(*) FROM sentencias WHERE minero=1")
-    prueba("hay sentencias de ambos tribunales",
-           q("SELECT COUNT(DISTINCT fuente) FROM sentencias") == 2)
+    from boletin.fuentes import FUENTES
+    prueba("hay sentencias de cada fuente registrada",
+           q("SELECT COUNT(DISTINCT fuente) FROM sentencias") == len(FUENTES),
+           f"{q('SELECT COUNT(DISTINCT fuente) FROM sentencias')} fuentes con datos "
+           f"de {len(FUENTES)} registradas")
+    prueba("el 3TA aporta redactor y competencia",
+           q("SELECT COUNT(*) FROM sentencias WHERE fuente='3ta' AND redactor IS NULL") == 0)
     prueba("hay sentencias mineras", mineras > 50, f"{mineras}")
     prueba("las mineras son minoría del total", mineras < total, f"{mineras}/{total}")
     prueba("no hay roles duplicados por fuente",
@@ -159,6 +186,24 @@ else:
     prueba(f"ningún texto guardado baja del mínimo útil ({MINIMO_UTIL})",
            q("SELECT COALESCE(MIN(LENGTH(TRIM(texto))),99999) FROM sentencias "
              "WHERE texto IS NOT NULL") >= MINIMO_UTIL)
+    # El 2TA publica el resultado; el 3TA no. Contrastar la heurística contra el
+    # dato real del 2TA es la única forma de saber cuánto vale cuando se aplica
+    # al 3TA a ciegas. Medido en 95%: si baja de 90, algo se rompió.
+    aciertos = fallos = 0
+    for f in con.execute("SELECT resuelve, texto FROM sentencias WHERE fuente='2ta' "
+                         "AND texto IS NOT NULL AND resuelve IS NOT NULL"):
+        d = controversias.resultado(f["texto"])
+        if d is None:
+            continue
+        real = (f["resuelve"] or "").lower()
+        if d.split()[0] in real or (d == "acoge parcialmente" and "parcial" in real):
+            aciertos += 1
+        else:
+            fallos += 1
+    tasa = 100 * aciertos // max(aciertos + fallos, 1)
+    prueba(f"la deducción del resultado acierta >=95% ({tasa}%)", tasa >= 95,
+           f"{aciertos}/{aciertos + fallos}")
+
     prueba("el 1TA trae titular y resumen del tribunal",
            q("SELECT COUNT(*) FROM sentencias WHERE fuente='1ta' AND titular IS NULL") == 0)
 

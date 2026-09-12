@@ -34,8 +34,15 @@ Cada paso es idempotente: se puede cortar y retomar sin duplicar nada.
 
 | | Aporta | Cobertura |
 |---|---|---|
-| **1.º T.A.** (`1ta`) | Titular y resumen **ya redactados por el tribunal** en su sala de prensa | 46% minero |
-| **2.º T.A.** (`2ta`) | Tabla estructurada + PDF de la sentencia íntegra | 17% minero |
+| **1.º T.A.** Antofagasta (`1ta`) | Titular y resumen **ya redactados por el tribunal** en su sala de prensa | 45% minero |
+| **2.º T.A.** Santiago (`2ta`) | Tabla estructurada, resultado publicado y PDF íntegro | 17% minero |
+| **3.º T.A.** Valdivia (`3ta`) | **Ministro redactor**, competencia del art. 17 y vídeo de los alegatos | 2% minero |
+
+El 3.º T.A. aporta poco volumen minero —Valdivia es forestal y acuícola— pero es
+el único que publica quién redactó cada fallo. A cambio no publica el resultado:
+se deduce de la parte resolutiva del PDF (`controversias.resultado`, 98% de
+acierto medido contra los 50 casos donde el 2.º T.A. sí lo publica) y se muestra
+marcado como inferido, nunca mezclado con el dato oficial.
 
 `juris.pjud.cl` (Corte Suprema) queda fuera: su `robots.txt` es `Disallow: /`
 para todo agente y el buscador va tras reCAPTCHA.
@@ -104,23 +111,16 @@ texto. `extraer` los detecta y los marca `estado_texto='escaneado'` en vez de
 guardar una cadena vacía; `ocr` los rescata con tesseract en español. Es lento
 (1-3 s por página), así que va como paso aparte y opcional.
 
-## Dónde quedó (2 de septiembre de 2026)
+## Dónde quedó (11 de septiembre de 2026)
 
-**Las 103 sentencias mineras tienen doctrina y resumen redactados.**
+**109 sentencias mineras, todas con doctrina y resumen redactados.**
 
 | | |
 |---|---|
-| doctrina + resumen | 103 / 103 |
-| fecha del fallo | 102 |
-| región | 93 |
-| enlace al expediente | 61 |
-| sentencia en PDF | 67 |
-| texto íntegro | 66 |
-| artículos indexados | 59 |
-| normas citadas | 38 |
-| rastro de la Corte Suprema | 27 |
+| doctrina + resumen | 109 / 109 |
+| texto íntegro | 70 |
+| rastro de la Corte Suprema | 28 |
+| artículos indexados | 61 |
+| con vídeo de alegatos | 2 |
 
-Lo que falta es cobertura, no calidad: 37 causas no publican PDF (solo enlace al
-expediente), y de ahí que el índice de normas cubra 38 y no 103.
-
-Siguiente paso natural: sumar el 3.º T.A. de Valdivia como tercera fuente.
+Tres tribunales, 745 sentencias en la base. `pruebas.py`: 88 pruebas.

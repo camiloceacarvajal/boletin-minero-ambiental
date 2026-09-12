@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS sentencias (
     descripcion  TEXT,                   -- texto crudo del listado
     region       TEXT,
     fecha_fallo  TEXT,                   -- ISO 8601
-    resuelve     TEXT,                   -- 'rechaza' | 'acoge' | ...
+    resuelve     TEXT,                   -- 'rechaza' | 'acoge' | ... (lo publica el tribunal)
+    resuelve_inf TEXT,                   -- deducido del PDF cuando el tribunal no lo publica
     url_pdf      TEXT,
     url_expediente TEXT,
     ruta_pdf     TEXT,                   -- copia local
@@ -28,6 +29,9 @@ CREATE TABLE IF NOT EXISTS sentencias (
     articulos    TEXT,                   -- artículos más invocados
     submaterias  TEXT,                   -- sancionatorio / evaluación / ...
     corte_sup    TEXT,                   -- anexada · N Sala | citada | NULL
+    redactor     TEXT,                   -- ministro/a que redactó (solo 3TA)
+    competencia  TEXT,                   -- numeral del art. 17 Ley 20.600 (solo 3TA)
+    video        TEXT,                   -- audiencia de alegatos (solo 3TA)
     visto_en     TEXT DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (fuente, rol)
 );
@@ -55,14 +59,15 @@ def guardar(con, reg):
     cur = con.execute(
         """INSERT OR IGNORE INTO sentencias
            (fuente, rol, materia, caratulado, descripcion, region,
-            fecha_fallo, resuelve, url_pdf, url_expediente, titular, resumen)
+            fecha_fallo, resuelve, url_pdf, url_expediente, titular, resumen,
+            redactor, competencia, video)
            VALUES (:fuente, :rol, :materia, :caratulado, :descripcion, :region,
                    :fecha_fallo, :resuelve, :url_pdf, :url_expediente,
-                   :titular, :resumen)""",
+                   :titular, :resumen, :redactor, :competencia, :video)""",
         {k: reg.get(k) for k in (
             "fuente", "rol", "materia", "caratulado", "descripcion", "region",
             "fecha_fallo", "resuelve", "url_pdf", "url_expediente",
-            "titular", "resumen")},
+            "titular", "resumen", "redactor", "competencia", "video")},
     )
     return cur.rowcount > 0
 

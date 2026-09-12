@@ -157,10 +157,10 @@ def ocr(args):
 
 def indexar(args):
     """Extrae normas, artículos y sub-materias del texto. Gratis y reejecutable."""
-    from boletin import materias, normas
+    from boletin import controversias, materias, normas
     n = 0
     with almacen.abrir(DB) as con:
-        filas = con.execute("SELECT id, texto, descripcion, resumen, titular "
+        filas = con.execute("SELECT id, texto, descripcion, resumen, titular, resuelve "
                             "FROM sentencias").fetchall()
         for f in filas:
             largo = f["texto"] or ""
@@ -171,7 +171,11 @@ def indexar(args):
                 normas="|".join(normas.extraer(largo)) or None,
                 articulos="|".join(normas.articulos(largo)) or None,
                 submaterias="|".join(materias.clasificar(base)),
-                corte_sup=normas.corte_suprema(largo, f['descripcion']))
+                corte_sup=normas.corte_suprema(largo, f["descripcion"]),
+                # Solo se deduce cuando el tribunal no lo publica: el dato
+                # propio siempre manda sobre la heurística.
+                resuelve_inf=(controversias.resultado(largo)
+                              if largo and not f["resuelve"] else None))
             n += 1
     print(f"{n} sentencias indexadas")
 

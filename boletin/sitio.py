@@ -74,6 +74,11 @@ def minero(filas, destino, plantillas="plantillas", titulo="La Veta — jurispru
     ss = []
     for f in filas:
         d = dict(f)
+        # Si el tribunal no publica el resultado, se usa el deducido del PDF,
+        # marcado como tal para no hacerlo pasar por dato oficial.
+        d["inferido"] = not d.get("resuelve") and bool(d.get("resuelve_inf"))
+        if d["inferido"]:
+            d["resuelve"] = d["resuelve_inf"]
         d["clase"] = _clase(d.get("resuelve"))
         d["tribunal"] = TRIBUNAL.get(d["fuente"], d["fuente"])
         d["fecha_larga"] = _en_palabras(d.get("fecha_fallo"))
@@ -87,7 +92,8 @@ def minero(filas, destino, plantillas="plantillas", titulo="La Veta — jurispru
             d["rol"], d["titular"], d.get("resumen"), d.get("descripcion"),
             d.get("region"), d.get("resuelve"), d["tribunal"],
             d.get("submaterias"), d.get("normas"), d.get("articulos"),
-            "corte suprema" if d.get("corte_sup") else "")).lower()
+            "corte suprema" if d.get("corte_sup") else "",
+            d.get("redactor"), d.get("competencia"))).lower()
         ss.append(d)
 
     ss.sort(key=lambda r: (r.get("fecha_fallo") or ""), reverse=True)
@@ -104,6 +110,7 @@ def minero(filas, destino, plantillas="plantillas", titulo="La Veta — jurispru
         n_rechaza=cuenta(lambda s: s["clase"] == "rechaza"),
         n_texto=cuenta(lambda s: s.get("texto")),
         n_cs=cuenta(lambda s: s.get("cs")),
+        n_3ta=cuenta(lambda s: s["fuente"] == "3ta"),
         submaterias=[m for m, _ in subs.most_common(9)],
         normas_top=[n for n, _ in normas_top.most_common(8)],
         bajada="Fallos de los tribunales ambientales chilenos sobre faenas, "

@@ -63,3 +63,78 @@ def titular_tentativo(texto, resuelve=None):
     if resuelve:
         mejor = f"{mejor} — {resuelve}"
     return mejor
+
+
+# --- cómo resolvió, leído del propio fallo ---------------------------------
+# El 3TA no publica el resultado en su tabla, a diferencia del 2TA. Se deduce
+# de la parte resolutiva, que siempre abre con un verbo en infinitivo.
+# El encabezado de la decisión es 'SE RESUELVE' / 'RESUELVE:'. 'POR TANTO' solo
+# abre la cita de normas —a veces larguísima— y en el 3TA reaparece DESPUÉS de
+# lo resuelto, así que sirve nada más como último recurso.
+_ANCLA = re.compile(r"\bSE\s+RESUELVE\b|(?<![A-Za-zÁÉÍÓÚÑ])RESUELVE\s*:|"
+                    r"\bSE\s+DECLARA\b|\bSE\s+AUTORIZA\b", re.I)
+_ANCLA_DEBIL = re.compile(r"\bPOR\s+TANTO\b", re.I)
+
+# Lo resolutivo suele abrir despachando lo procesal ("Rechazar la excepción de
+# incompetencia...") y recién después decidir el fondo ("Acoger la demanda..."),
+# así que quedarse con el primer verbo se equivoca. Se busca el verbo aplicado
+# al OBJETO PRINCIPAL y solo si no aparece se cae al primero que haya.
+_PRINCIPAL = r"(?:la\s+)?(?:demanda|reclamaci[óo]n|reclamo|solicitud|consulta)"
+_ACCESORIO = r"(?:la\s+|el\s+)?(?:excepci[óo]n|incidente|objeci[óo]n|alegaci[óo]n|tacha)"
+
+_FONDO = [
+    ("acoge parcialmente", rf"acoger\s+(?:parcialmente|en\s+parte)\s+{_PRINCIPAL}|"
+                           rf"acoger\s+{_PRINCIPAL}[^.]{{0,40}}?\s+(?:s[óo]lo|parcialmente)"),
+    ("acoge",              rf"acoger\s+(?:en\s+todas\s+sus\s+partes\s+)?{_PRINCIPAL}"),
+    ("rechaza",            rf"rechazar\s+(?:en\s+todas\s+sus\s+partes\s+)?{_PRINCIPAL}"),
+    ("inadmisible",        rf"declarar\s+(?:la\s+)?inadmisi\w+\s+(?:de\s+)?{_PRINCIPAL}"),
+    ("autoriza",           r"autorizar\s+(?:la\s+)?medida|se\s+autoriza\s+la\s+medida"),
+    ("aprueba",            r"aprobar\s+(?:la\s+)?(?:sanci[óo]n|avenimiento|conciliaci[óo]n)|"
+                           r"se\s+aprueba\s+(?:el\s+|la\s+)?(?:avenimiento|sanci[óo]n)"),
+    ("anula",              rf"anular\s+{_PRINCIPAL}|dejar\s+sin\s+efecto\s+la\s+resoluci"),
+]
+_RESPALDO = [
+    ("autoriza",    r"\bautorizar\b|se\s+autoriza\b"),
+    ("aprueba",     r"\baprobar\b|se\s+aprueba\b"),
+    ("acoge",       r"\bacoger\b"),
+    ("rechaza",     r"\brechazar\b"),
+    ("inadmisible", r"\binadmisibl\w+"),
+]
+_FONDO = [(n, re.compile(p, re.I)) for n, p in _FONDO]
+_RESPALDO = [(n, re.compile(p, re.I)) for n, p in _RESPALDO]
+
+
+def resultado(texto, ventana=2500):
+    """Deduce el resultado leyendo la última parte resolutiva del fallo.
+
+    Se toma la ÚLTIMA aparición de 'SE RESUELVE' porque el índice del documento
+    la repite al principio, con el número de página al lado.
+    """
+    if not texto:
+        return None
+    ult = None
+    for m in _ANCLA.finditer(texto):
+        ult = m
+    if not ult:
+        for m in _ANCLA_DEBIL.finditer(texto):
+            ult = m
+    if not ult:
+        return None
+    bloque = texto[ult.start(): ult.start() + ventana]
+    # El voto disidente dice lo contrario de lo resuelto ("estuvo por acoger"):
+    # todo lo que venga después de ese marcador sobra.
+    disidencia = re.search(r"acordada\s+con\s+el\s+voto|voto\s+(?:en\s+contra|disidente)|"
+                           r"se\s+previene|prevenci[óo]n\s+del\s+[Mm]inistro", bloque, re.I)
+    if disidencia:
+        bloque = bloque[:disidencia.start()]
+    # Fuera lo accesorio, que es lo que confunde: 'Rechazar la excepción de...'
+    limpio = re.sub(rf"(?:rechazar|acoger)\s+{_ACCESORIO}[^.;]{{0,120}}[.;]", " ",
+                    bloque, flags=re.I)
+
+    for nombre, pat in _FONDO:
+        if pat.search(limpio):
+            return nombre
+    for nombre, pat in _RESPALDO:
+        if pat.search(limpio):
+            return nombre
+    return None

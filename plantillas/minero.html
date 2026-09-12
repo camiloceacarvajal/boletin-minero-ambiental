@@ -86,6 +86,7 @@ article:hover{transform:translateY(-1px);border-color:var(--cobre)}
 .fallo.acoge{background:var(--verde-bg);color:var(--verde)}
 .fallo.rechaza{background:var(--rojo-bg);color:var(--rojo)}
 .fallo.otro{background:var(--azul-bg);color:var(--azul)}
+.fallo.inf{opacity:.72;border:1px dashed currentColor}
 .fecha{margin-left:auto;font-size:.75rem;color:var(--tenue)}
 h3{font-family:Fraunces,Georgia,serif;font-size:1.09rem;font-weight:600;line-height:1.35;
    margin:0 0 .45rem;letter-spacing:-.01em}
@@ -140,6 +141,7 @@ footer a{color:var(--cobre)}
   <div class="cifra acento"><b>{{ total }}</b><span>Sentencias</span></div>
   <div class="cifra"><b>{{ n_1ta }}</b><span>1.º T.A. — Norte</span></div>
   <div class="cifra"><b>{{ n_2ta }}</b><span>2.º T.A. — Centro</span></div>
+  <div class="cifra"><b>{{ n_3ta }}</b><span>3.º T.A. — Sur</span></div>
   <div class="cifra"><b>{{ n_acoge }}</b><span>Acogidas</span></div>
   <div class="cifra"><b>{{ n_rechaza }}</b><span>Rechazadas</span></div>
   <div class="cifra"><b>{{ n_texto }}</b><span>Texto íntegro</span></div>
@@ -152,6 +154,7 @@ footer a{color:var(--cobre)}
     <button class="chip" data-f="todo" aria-pressed="true">Todas</button>
     <button class="chip" data-f="1ta" aria-pressed="false">1.º T.A.</button>
     <button class="chip" data-f="2ta" aria-pressed="false">2.º T.A.</button>
+    <button class="chip" data-f="3ta" aria-pressed="false">3.º T.A.</button>
     <button class="chip" data-f="acoge" aria-pressed="false">Acoge</button>
     <button class="chip" data-f="rechaza" aria-pressed="false">Rechaza</button>
     <button class="chip" data-f="pdf" aria-pressed="false">Con sentencia PDF</button>
@@ -171,7 +174,9 @@ footer a{color:var(--cobre)}
     <div class="linea">
       <span class="rol">{{ s.rol }}</span>
       <span class="trib">{{ s.tribunal }}</span>
-      {% if s.resuelve %}<span class="fallo {{ s.clase }}">{{ s.resuelve[:26] }}</span>{% endif %}
+      {% if s.resuelve %}<span class="fallo {{ s.clase }}{% if s.inferido %} inf{% endif %}"
+        {% if s.inferido %}title="Deducido de la parte resolutiva del PDF: el tribunal no lo publica"{% endif %}
+        >{{ s.resuelve[:26] }}{% if s.inferido %} ·{% endif %}</span>{% endif %}
       {% if s.cs %}<span class="cs" title="{{ s.cs }}">CS</span>{% endif %}
       <span class="fecha">{{ s.fecha_larga }}</span>
     </div>
@@ -182,6 +187,9 @@ footer a{color:var(--cobre)}
     {% endif %}
     <div class="pie">
       {% if s.region %}<span class="region">{{ s.region }}</span>{% endif %}
+      {% if s.redactor and s.redactor != '-' %}<span class="region">Redactó: {{ s.redactor }}</span>{% endif %}
+      {% if s.competencia %}<span class="region">Art. {{ s.competencia }}</span>{% endif %}
+      {% if s.video %}<a href="{{ s.video }}">Alegatos ▶</a>{% endif %}
       {% if s.url_pdf %}<a href="{{ s.url_pdf }}">Sentencia ↓</a>{% endif %}
       {% if s.url_expediente %}<a href="{{ s.url_expediente }}">Expediente ↗</a>{% endif %}
       {% if s.normas_l %}<button class="detalle" type="button">Ver normas citadas →</button>{% endif %}
@@ -237,7 +245,7 @@ footer a{color:var(--cobre)}
     var t=q.value.trim().toLowerCase(), n=0;
     fichas.forEach(function(f){
       var pasaChip = activo==='todo'
-        || (activo==='1ta'||activo==='2ta') && f.dataset.t===activo
+        || (activo==='1ta'||activo==='2ta'||activo==='3ta') && f.dataset.t===activo
         || (activo==='acoge'||activo==='rechaza') && f.dataset.r===activo
         || activo==='pdf' && f.dataset.pdf==='1'
         || activo==='cs' && f.dataset.cs==='1';

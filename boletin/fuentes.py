@@ -210,3 +210,95 @@ def _resultado(t):
 
 
 FUENTES["1ta"] = primer_tribunal_ambiental
+
+
+# --- Tercer Tribunal Ambiental (Valdivia: sur austral) --------------------
+# Su tabla es la más rica de las tres: además de rol, carátula, fecha y PDF,
+# publica quién redactó el fallo y bajo qué numeral del artículo 17 de la
+# Ley 20.600 se conoció la causa. Ninguno de los otros dos tribunales lo hace.
+URL_3TA = "https://3ta.cl/sentencias/"
+
+MESES = {m: i for i, m in enumerate(
+    "enero febrero marzo abril mayo junio julio agosto "
+    "septiembre octubre noviembre diciembre".split(), 1)}
+
+_FECHA_LARGA = re.compile(r"(\d{1,2})\s+de\s+([a-záéíóú]+)\s+de\s+(\d{4})", re.I)
+
+
+def _fecha_larga(txt):
+    """'10 de septiembre de 2026' -> '2026-09-10'."""
+    m = _FECHA_LARGA.search(txt or "")
+    if not m:
+        return None
+    mes = MESES.get(unicodedata.normalize("NFKD", m.group(2).lower())
+                    .encode("ascii", "ignore").decode()
+                    .replace("septiembre", "septiembre"))
+    if not mes:
+        mes = MESES.get(m.group(2).lower())
+    if not mes:
+        return None
+    try:
+        return date(int(m.group(3)), mes, int(m.group(1))).isoformat()
+    except ValueError:
+        return None
+
+
+def _competencia(txt):
+    """'17N°3', '17 N°8 Ley 20.600.' -> '17 N°3', '17 N°8'."""
+    m = re.search(r"17\s*N?\s*[°º]?\s*(\d{1,2})", _limpiar(txt))
+    return f"17 N°{m.group(1)}" if m else None
+
+
+def tercer_tribunal_ambiental():
+    """Listado público de sentencias del 3TA (Valdivia). robots.txt: permitido."""
+    soup = BeautifulSoup(_get(URL_3TA).text, "lxml")
+    tabla = soup.find("table", class_="tablepress")
+    if not tabla:
+        return
+
+    for fila in tabla.select("tbody tr"):
+        celdas = fila.find_all("td")
+        if len(celdas) < 6:
+            continue
+
+        # El 3TA alterna 'R-68-2022' y 'R 68-2022': se normaliza el separador.
+        crudo = _limpiar(celdas[1].get_text(" "))
+        m = re.match(r"^([A-Z])\s*[-\s]\s*(\d+)\s*-\s*(\d{4})\b", crudo)
+        if not m:
+            continue
+        rol = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+
+        # col 2: carátula + enlace a la sentencia + a veces vídeo de alegatos
+        caratula_celda = celdas[2]
+        pdf = video = None
+        for a in caratula_celda.find_all("a", href=True):
+            h = a["href"]
+            if h.lower().endswith(".pdf") and not pdf:
+                pdf = h
+            elif "youtube.com" in h or "youtu.be" in h:
+                video = h
+        caratula = _limpiar(caratula_celda.get_text(" "))
+        for sobra in ("Sentencia " + rol, "Video Audiencia de Alegatos", "Síntesis"):
+            caratula = caratula.replace(sobra, " ")
+        caratula = _limpiar(caratula)
+
+        expediente = next((a["href"] for a in celdas[1].find_all("a", href=True)), None)
+
+        yield {
+            "fuente": "3ta",
+            "rol": rol,
+            "materia": "Reclamaciones",
+            "caratulado": caratula[:300],
+            "descripcion": caratula,
+            "region": None,               # el 3TA no lo publica en la tabla
+            "fecha_fallo": _fecha_larga(celdas[3].get_text(" ")),
+            "resuelve": None,             # tampoco: hay que leer el PDF
+            "url_pdf": pdf,
+            "url_expediente": expediente,
+            "redactor": _limpiar(celdas[4].get_text(" ")) or None,
+            "competencia": _competencia(celdas[5].get_text(" ")),
+            "video": video,
+        }
+
+
+FUENTES["3ta"] = tercer_tribunal_ambiental
